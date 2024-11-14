@@ -1,130 +1,79 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="https://www.ros.org/wiki/xacro">
-<!-- <robot xmlns:drake="http://drake.mit.edu" name="ping_pong_arm"> -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <!-- <xacro:property name="wrist_limit" value="${pi/2}"/> -->
+    <xacro:include filename="inertial_macros.xacro"/>
 
-    <link name="base_link"></link>
+    <xacro:property name="upperarm_length" value="0.6" />
+    <xacro:property name="forearm_length" value="0.6" />
+    <xacro:property name="shoulder_height" value=".1" />
+    <xacro:property name="elbow_height" value="0.5" />
 
+    <material name="white">
+        <color rgba="1 1 1 1" />
+    </material>
+
+    <link name="base_link"></link>    
+    
     <joint name="odrive_joint" type="fixed">
-        <parent link="base_link">
-        <child link="odrive_base">
+        <parent link="base_link"/>
+        <child link="odrive_base"/>
     </joint>
 
     <link name="odrive_base">
-        <inertial>
+        <!-- <inertial>
             <origin rpy="0 0 0" xyz="-0.1 0 0.07"/>
             <mass value="5"/>
             <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.06" iyz="0" izz="0.03"/>
-        </inertial>
+        </inertial> -->
         <visual>
             <geometry>
-                <cylinder length="0.2" radius="0.06"/>
+                <cylinder length="${shoulder_height}" radius="0.06"/>
             </geometry>
-            <origin xyz="0 0 .1" />
             <material name="Black">
                 <color rgba="0 1.0 1.0 .50"/>
             </material>
+            <origin xyz="0 0 ${shoulder_height/2}"/>
         </visual>
-        <collision>
+        <xacro:inertial_pseudo/>
+        <!-- <collision>
             <origin rpy="0 0 0" xyz="-0.015 0 0.07"/>
             <geometry>
               <cylinder length="0.17" radius="0.139"/>
             </geometry>
             <material name="Grey"/>
-        </collision>
-        <!-- <self_collision_checking>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
-            <geometry>
-                <capsule length="0.25" radius="0.15"/>
-            </geometry>
-        </self_collision_checking> -->
+        </collision> -->
     </link>
 
-    <joint name="shoulder" type="continuous">
+    <joint name="shoulder" type="revolute">
         <parent link="odrive_base"/>
-        <child link="upperarm"/>
-        <origin xyz="0 0 .2" rpy="1.57079632679 0 0"/>
-        <axis xyz="0 1 0" />
-        <limit drake:acceleration="8.57" effort="320" lower="-2.96705972839" upper="2.96705972839" velocity="1.4835298641951802"/>
-        <dynamics damping="0.5"/>
+        <child link="upper_arm"/>
+        <origin xyz="0 0 ${shoulder_height/2}"/>
+        <axis xyz="0 0 1" />
+        <limit upper="1.5" lower="-1.5" effort=".1" velocity=".5"/>
+        <!-- <limit drake:acceleration="8.57" effort="320" lower="-2.96705972839" upper="2.96705972839" velocity="1.4835298641951802"/>
+        <dynamics damping="0.5"/> -->
     </joint>
 
-    <link name="upperarm">
-        <inertial>
+    <link name="upper_arm">
+        <!-- <inertial>
             <origin rpy="0 0 0" xyz="0 -0.03 0.12"/>
             <mass value="5.76"/>
             <inertia ixx="0.033" ixy="0" ixz="0" iyy="0.0333" iyz="0" izz="0.0123"/>
-        </inertial>
+        </inertial> -->
         <visual>
             <geometry>
-                <box size=".04 .04 .3"/>
+                <box size=".04 ${upperarm_length} .04"/>
             </geometry>
-            <origin rpy="0 0 0" xyz="0 .02 .15" />
+            <origin xyz="0 ${upperarm_length/2} .02" />
         </visual>
-        <collision>
+        <xacro:inertial_pseudo/>
+        <!-- <collision>
             <origin rpy="0 0 0" xyz="0 -0.014 0.14"/>
             <geometry>
               <cylinder length="0.29" radius="0.101"/>
             </geometry>
             <material name="Grey"/>
-        </collision>
+        </collision> -->
     </link>
 
-    <!-- <link name="forearm">
-        <visual>
-            <geometry>
-                <box size=".04 .04 .3"/>
-            </geometry>
-            <origin xyz=".02 .04 .3"/>
-        </visual>
-    </link> -->
-
-    <!-- <joint name="base_joint" type="fixed">
-        <parent link="sidecar"/>
-        <child link="base"/>
-    </joint> -->
-  
-    <!-- <joint name="elbow" type="continuous">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <parent link="upperarm"/>
-        <child link="forearm"/>
-    </joint> -->
-  
-    <!-- <joint name="wrist_roll" type="revolute">
-        <origin xyz="5 0 0" rpy="0 0 0"/>
-        <axis xyz="1 0 0"/>
-        <parent link="forearm"/>
-        <child link="hand"/>
-        <limit lower="-1.57" upper="1.57"/>
-    </joint>
-    
-    <joint name="wrist_pitch" type="revolute">
-        <origin xyz="5 0 0" rpy="0 0 0"/>
-        <axis xyz="0 1 0"/>
-        <parent link="forearm"/>
-        <child link="hand"/>
-        <limit lower="-1.57" upper="1.57"/>
-    </joint>
-
-    <joint name="wrist_yaw" type="revolute">
-        <origin xyz="5 0 0" rpy="0 0 0"/>
-        <axis xyz="0 0 1"/>
-        <parent link="forearm"/>
-        <child link="hand"/>
-        <limit lower="-1.57" upper="1.57"/>
-    </joint> -->
-
-    <!-- <transmission name="shoulder_transmission">
-        <robotNamespace>/iiwa</robotNamespace>
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="shoulder">
-          <hardwareInterface>PositionJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="shoulder_motor">
-          <hardwareInterface>PositionJointInterface</hardwareInterface>
-          <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-      </transmission> -->
-
-  </robot>
+</robot>

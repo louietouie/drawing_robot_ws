@@ -17,8 +17,11 @@ target_include_directories(base_node PUBLIC
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 target_compile_features(base_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-install(TARGETS base_node
-  DESTINATION lib/${PROJECT_NAME})
+install(
+  # TARGETS base_node
+  DIRECTORY config models launch worlds
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="sledgehammer">
+
+    <xacro:include filename="base_robot.xacro" />
+    
+</robot>
