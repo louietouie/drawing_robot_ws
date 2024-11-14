@@ -3,10 +3,14 @@
 
     <xacro:include filename="inertial_macros.xacro"/>
 
+    <xacro:property name="shoulder_height" value="0.1" />
+    <xacro:property name="shoulder_radius" value="0.06" />
+
     <xacro:property name="upperarm_length" value="0.6" />
+    <xacro:property name="upperarm_width" value="0.04" />
+
     <xacro:property name="forearm_length" value="0.6" />
-    <xacro:property name="shoulder_height" value=".1" />
-    <xacro:property name="elbow_height" value="0.5" />
+    <xacro:property name="forearm_width" value="0.04" />
 
     <material name="white">
         <color rgba="1 1 1 1" />
@@ -27,7 +31,7 @@
         </inertial> -->
         <visual>
             <geometry>
-                <cylinder length="${shoulder_height}" radius="0.06"/>
+                <cylinder length="${shoulder_height}" radius="${shoulder_radius}"/>
             </geometry>
             <material name="Black">
                 <color rgba="0 1.0 1.0 .50"/>
@@ -46,15 +50,15 @@
 
     <joint name="shoulder" type="revolute">
         <parent link="odrive_base"/>
-        <child link="upper_arm"/>
-        <origin xyz="0 0 ${shoulder_height/2}"/>
+        <child link="upperarm"/>
+        <origin xyz="0 0 ${shoulder_height}"/>
         <axis xyz="0 0 1" />
-        <limit upper="1.5" lower="-1.5" effort=".1" velocity=".5"/>
+        <limit upper="${pi/2}" lower="-${pi/2}" effort=".1" velocity=".5"/>
         <!-- <limit drake:acceleration="8.57" effort="320" lower="-2.96705972839" upper="2.96705972839" velocity="1.4835298641951802"/>
         <dynamics damping="0.5"/> -->
     </joint>
 
-    <link name="upper_arm">
+    <link name="upperarm">
         <!-- <inertial>
             <origin rpy="0 0 0" xyz="0 -0.03 0.12"/>
             <mass value="5.76"/>
@@ -62,9 +66,9 @@
         </inertial> -->
         <visual>
             <geometry>
-                <box size=".04 ${upperarm_length} .04"/>
+                <box size="${upperarm_width} ${upperarm_length} ${upperarm_width}"/>
             </geometry>
-            <origin xyz="0 ${upperarm_length/2} .02" />
+            <origin xyz="0 ${upperarm_length/2} ${upperarm_width/2}" />
         </visual>
         <xacro:inertial_pseudo/>
         <!-- <collision>
@@ -75,5 +79,38 @@
             <material name="Grey"/>
         </collision> -->
     </link>
+
+    <joint name="elbow" type="revolute">
+        <parent link="upperarm"/>
+        <child link="forearm"/>
+        <origin xyz="0 ${upperarm_length} ${upperarm_width}"/>
+        <axis xyz="0 0 1" />
+        <limit upper="${pi/2}" lower="-${pi/2}" effort=".1" velocity=".5"/>
+        <!-- <limit drake:acceleration="8.57" effort="320" lower="-2.96705972839" upper="2.96705972839" velocity="1.4835298641951802"/>
+        <dynamics damping="0.5"/> -->
+    </joint>
+
+    <link name="forearm">
+        <!-- <inertial>
+            <origin rpy="0 0 0" xyz="0 -0.03 0.12"/>
+            <mass value="5.76"/>
+            <inertia ixx="0.033" ixy="0" ixz="0" iyy="0.0333" iyz="0" izz="0.0123"/>
+        </inertial> -->
+        <visual>
+            <geometry>
+                <box size=".04 ${forearm_length} ${forearm_width}"/>
+            </geometry>
+            <origin xyz="0 ${forearm_length/2} ${forearm_width/2}" />
+        </visual>
+        <xacro:inertial_pseudo/>
+        <!-- <collision>
+            <origin rpy="0 0 0" xyz="0 -0.014 0.14"/>
+            <geometry>
+              <cylinder length="0.29" radius="0.101"/>
+            </geometry>
+            <material name="Grey"/>
+        </collision> -->
+    </link>
+
 
 </robot>
