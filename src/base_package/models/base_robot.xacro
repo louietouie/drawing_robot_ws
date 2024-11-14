@@ -2,19 +2,18 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <xacro:include filename="inertial_macros.xacro"/>
+    <xacro:include filename="visual_macros.xacro"/>
 
-    <xacro:property name="shoulder_height" value="0.1" />
-    <xacro:property name="shoulder_radius" value="0.06" />
+    <xacro:property name="shoulder_radius" value="${.18/2}" />
+    <xacro:property name="shoulder_height" value=".1615" />
 
-    <xacro:property name="upperarm_length" value="0.6" />
-    <xacro:property name="upperarm_width" value="0.04" />
+    <xacro:property name="upperarm_length" value=".30381" />
+    <xacro:property name="upperarm_height" value="0.070471" />
+    <xacro:property name="upperarm_mass" value="0.4" />
 
-    <xacro:property name="forearm_length" value="0.6" />
-    <xacro:property name="forearm_width" value="0.04" />
-
-    <material name="white">
-        <color rgba="1 1 1 1" />
-    </material>
+    <xacro:property name="forearm_length" value=".259916" />
+    <xacro:property name="forearm_height" value=".02545" />
+    <xacro:property name="forearm_mass" value="0.3" />
 
     <link name="base_link"></link>    
     
@@ -24,28 +23,11 @@
     </joint>
 
     <link name="odrive_base">
-        <!-- <inertial>
-            <origin rpy="0 0 0" xyz="-0.1 0 0.07"/>
-            <mass value="5"/>
-            <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.06" iyz="0" izz="0.03"/>
-        </inertial> -->
-        <visual>
-            <geometry>
-                <cylinder length="${shoulder_height}" radius="${shoulder_radius}"/>
-            </geometry>
-            <material name="Black">
-                <color rgba="0 1.0 1.0 .50"/>
+        <xacro:cylinder_identical_collision mass="3" radius="${shoulder_radius}" height="${shoulder_height}">
+            <material name="blue">
+                <color rgba="0 0 1 1" />
             </material>
-            <origin xyz="0 0 ${shoulder_height/2}"/>
-        </visual>
-        <xacro:inertial_pseudo/>
-        <!-- <collision>
-            <origin rpy="0 0 0" xyz="-0.015 0 0.07"/>
-            <geometry>
-              <cylinder length="0.17" radius="0.139"/>
-            </geometry>
-            <material name="Grey"/>
-        </collision> -->
+        </xacro:cylinder_identical_collision>
     </link>
 
     <joint name="shoulder" type="revolute">
@@ -59,31 +41,18 @@
     </joint>
 
     <link name="upperarm">
-        <!-- <inertial>
-            <origin rpy="0 0 0" xyz="0 -0.03 0.12"/>
-            <mass value="5.76"/>
-            <inertia ixx="0.033" ixy="0" ixz="0" iyy="0.0333" iyz="0" izz="0.0123"/>
-        </inertial> -->
-        <visual>
-            <geometry>
-                <box size="${upperarm_width} ${upperarm_length} ${upperarm_width}"/>
-            </geometry>
-            <origin xyz="0 ${upperarm_length/2} ${upperarm_width/2}" />
-        </visual>
-        <xacro:inertial_pseudo/>
-        <!-- <collision>
-            <origin rpy="0 0 0" xyz="0 -0.014 0.14"/>
-            <geometry>
-              <cylinder length="0.29" radius="0.101"/>
-            </geometry>
-            <material name="Grey"/>
-        </collision> -->
+        <xacro:square_prism_identical_collision mass="${upperarm_mass}" length="${upperarm_length}" height="${upperarm_height}">
+            <material name="green">
+                <color rgba="0 1 0 1" />
+            </material>
+        </xacro:square_prism_identical_collision>
+        <xacro:square_prism_inertial mass="${upperarm_mass}" length="${upperarm_length}" height="${upperarm_height}"/>
     </link>
 
     <joint name="elbow" type="revolute">
         <parent link="upperarm"/>
         <child link="forearm"/>
-        <origin xyz="0 ${upperarm_length} ${upperarm_width}"/>
+        <origin xyz="0 ${upperarm_length} ${upperarm_height}"/>
         <axis xyz="0 0 1" />
         <limit upper="${pi/2}" lower="-${pi/2}" effort=".1" velocity=".5"/>
         <!-- <limit drake:acceleration="8.57" effort="320" lower="-2.96705972839" upper="2.96705972839" velocity="1.4835298641951802"/>
@@ -91,25 +60,12 @@
     </joint>
 
     <link name="forearm">
-        <!-- <inertial>
-            <origin rpy="0 0 0" xyz="0 -0.03 0.12"/>
-            <mass value="5.76"/>
-            <inertia ixx="0.033" ixy="0" ixz="0" iyy="0.0333" iyz="0" izz="0.0123"/>
-        </inertial> -->
-        <visual>
-            <geometry>
-                <box size=".04 ${forearm_length} ${forearm_width}"/>
-            </geometry>
-            <origin xyz="0 ${forearm_length/2} ${forearm_width/2}" />
-        </visual>
-        <xacro:inertial_pseudo/>
-        <!-- <collision>
-            <origin rpy="0 0 0" xyz="0 -0.014 0.14"/>
-            <geometry>
-              <cylinder length="0.29" radius="0.101"/>
-            </geometry>
-            <material name="Grey"/>
-        </collision> -->
+        <xacro:square_prism_identical_collision mass="${forearm_mass}" length="${forearm_length}" height="${forearm_height}">
+            <material name="red">
+                <color rgba="1 1 0 1" />
+            </material>
+        </xacro:square_prism_identical_collision>
+        <xacro:square_prism_inertial mass="${forearm_mass}" length="${forearm_length}" height="${forearm_height}"/>
     </link>
 
 
