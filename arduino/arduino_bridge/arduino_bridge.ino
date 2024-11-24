@@ -1,8 +1,10 @@
 #include "can.h"
 #include "commands.h"
+#include "driver.h"
 
 void setup() {
   setupCAN();
+  // motor::setup()
   // setupDriver();
 
   // enable pin up/downs
@@ -22,6 +24,7 @@ void decipherMessage() {
     case E_STOP:
       break;
     case SET_ACCEL:
+      motor::setAcceleration(1000);
       break;
     case SET_SPEED:
       break;

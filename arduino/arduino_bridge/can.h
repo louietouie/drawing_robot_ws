@@ -6,10 +6,11 @@
 
   #define CS_PIN 10
 
-#endif #CAN_H
+  extern struct can_frame canMsg; // extern is "telling the compiler that you have already [declared] the [variable] somewhere in your project" Some reason .h file not working
 
-struct can_frame canMsg;
+  void setupCAN();
+  void writeCAN();
+  bool readCAN();
 
-void setupCAN();
-void writeCAN();
-bool readCAN();
+#endif
+

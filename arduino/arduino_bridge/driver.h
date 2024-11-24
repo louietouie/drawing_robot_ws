@@ -17,30 +17,22 @@
                         // Panucatt BSD2660 uses 0.1
                         // Watterott TMC5160 uses 0.075
 
+  // I know only one instance of this driver will exist, so don't need to make it a class that can be declared multiple times.
+  // Similar to a utility class of static functions.
+  namespace motor {
+
+    extern FastAccelStepper *stepper;
+    extern FastAccelStepperEngine engine;
+    extern TMC2209Stepper uartDriver; // why does this constructor need to be called in header, but engine constructor called in cpp?
+
+    void setup();
+    void stop();
+    int32_t getPosition();
+    int32_t getSpeed();
+    void setPosition(int32_t);
+    void setSpeed(int32_t);
+    void setAcceleration(int32_t);
+
+  }
+
 #endif
-
-class StepperDriver {
-    public:
-        StepperDriver();
-        void setup();
-        void stop();
-        int32_t getPosition();
-        int32_t getVelocity();
-        void setPosition(int16_t);
-        void setSpeed(int16_t);
-        void setAcceleration(int16_t);
-        
-    private:
-        void initializeMotor();
-        void initializeMotorProperties();
-        void initializeDriver();
-        // TMC2209Stepper uartDriver;
-        FastAccelStepperEngine engine;
-        FastAccelStepper *stepper;
-        uint32_t acceleration_steps_ss;
-        uint32_t handover_steps;
-        uint32_t jump_start_steps;
-        uint32_t max_speed_steps_s;
-};
-
-StepperDriver stepper;
