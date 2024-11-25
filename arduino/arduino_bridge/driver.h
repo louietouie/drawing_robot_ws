@@ -19,6 +19,7 @@
 
   // I know only one instance of this driver will exist, so don't need to make it a class that can be declared multiple times.
   // Similar to a utility class of static functions.
+  
   namespace motor {
 
     extern FastAccelStepper *stepper;
@@ -32,6 +33,12 @@
     void setPosition(int32_t);
     void setSpeed(int32_t);
     void setAcceleration(int32_t);
+    void initializeMotorProperties();
+
+    extern uint32_t _handoverSteps;
+    extern uint32_t _jumpstartSteps;
+    extern uint32_t _maxSpeedStepsS;
+    extern uint32_t _maxAccelStepsSS;
 
   }
 
