@@ -1,6 +1,19 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="sledgehammer">
 
-    <xacro:include filename="base_robot.xacro" />
+    <xacro:arg name="prefix" default=""/>
+
+    <!-- chose hardware interface -->
+    <xacro:arg name="use_mode_mock_hardware" default="false">
+    <xacro:arg name="use_mode_classic_gazebo" default="false">
+    <xacro:arg name="use_mode_gazebo" default="false">
+
+    <!-- import robot -->
+    <xacro:include filename="helper/base_robot.xacro"/>
+
+    <!-- import ros2_control -->
+    <xacro:include filename="helper/robot.ros2_control.xacro"/>
+
+
     
 </robot>
