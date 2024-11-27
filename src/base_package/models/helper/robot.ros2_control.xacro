@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="ros2_control_robot" params="name prefix">
+
+        <ros2_control name="louis_bot" type="system">
+
+            <hardware>
+                <xacro:if value="${use_mode_mock_hardware}">
+                    <plugin>mock_components/GenericSystem</plugin>
+                </xacro:if>
+                <xacro:if value="${use_mode_classic_gazebo}">
+                    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+                </xacro:if>
+                <xacro:if value="${use_mode_gazebo}">
+                    <plugin>ign_ros2_control/IgnitionSystem</plugin>
+                </xacro:if>
+                <xacro:unless value="${use_mode_mock_hardware or use_mode_classic_gazebo or use_mode_gazebo}">
+                    <!-- TODO: add custom controller here!! -->
+                    <plugin>package_name/ClassName</plugin> 
+                </xacro:unless>
+            </hardware>
+
+            <joint name="shoulder">
+                <!-- can use position or velocity port to connect a controller -->
+                <command_interface name="position">
+                    <param name="min">-1</param>
+                    <param name="max">1</param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min">-1</param>
+                    <param name="max">1</param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+            </joint>
+
+            <joint name="elbow">
+                <command_interface name="position">
+                    <param name="min">-1</param>
+                    <param name="max">1</param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min">-1</param>
+                    <param name="max">1</param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+            </joint>
+        
+        </ros2_control>
+    
+    </xacro:macro>
+
+</robot>
