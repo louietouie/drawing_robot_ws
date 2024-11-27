@@ -29,25 +29,49 @@ def generate_launch_description():
     node_controller_manager = get_launch_file('controller_manager.launch.py', args_controller_manager)
 
     # # pre-packaged Forward Position Controller. Delay until Controller Manager launches.
-    # args_controller = {}
-    # node_controller = Node(
-    #     package="controller_manager",
-    #     executable="spawner.py",
-    #     arguments=["forward_position_controller"],
-    # )
+    print("z")
+    controller_config_yaml = PathJoinSubstitution(
+        [
+            FindPackageShare(package_name),
+            "config",
+            "controller.yaml",
+        ]
+    )
+    print("s")
+    args_controller = {}
+    node_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["my_forward_position_controller", "--param-file", controller_config_yaml],
+    )
+    print("w")
+
     # node_delay_controller = RegisterEventHandler(
     #     event_handler=OnProcessExit(
     #         target_action=node_controller_manager,
     #         on_exit=[node_controller],
     #     )
     # )
+    print("b")
 
-    # # Joint Broadcast
+    # Joint Broadcast
+    # Joint State Broadcast different that Joint State Publisher?
+    node_joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["my_joint_state_broadcaster"],
+    )
+
     # node_joint_state_broadcaster_spawner = Node(
     #     package="controller_manager",
-    #     executable="spawner.py",
-    #     arguments=["my_joint_state_broadcaster"],
+    #     executable="spawner",
+    #     arguments=[
+    #         "joint_state_broadcaster",
+    #         "--controller-manager",
+    #         "/controller_manager",
+    #     ],
     # )
+    print("a")
     # node_delay_joint_state_broadcaster_spawner = RegisterEventHandler(
     #     event_handler=OnProcessExit(
     #         target_action=node_controller_manager,
@@ -55,7 +79,7 @@ def generate_launch_description():
     #     )
     # )
 
-    # # RViz (uses config file)
+    # RViz (uses config file)
     # node_rviz = get_launch_file('rviz.launch.py', {})
     # node_delay_rviz = RegisterEventHandler(
     #     event_handler=OnProcessExit(
@@ -63,14 +87,27 @@ def generate_launch_description():
     #         on_start=[node_rviz],
     #     )
     # )
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("base_package"), "config", "view_bot.rviz"]
+    )
+    node_rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file]
+    )
 
     # Launch all
     return LaunchDescription([
         node_robot_state_publisher,
-        node_controller_manager
+        node_controller_manager,
+        node_controller,
         # node_delay_controller,
         # node_delay_joint_state_broadcaster_spawner,
         # node_delay_rviz
+        node_rviz,
+        node_joint_state_broadcaster_spawner
     ])
 
 def get_launch_file(file_name, launch_args):
