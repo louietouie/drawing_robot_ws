@@ -16,45 +16,44 @@ def generate_launch_description():
     # package must include all launch files
     package_name = 'base_package'
 
-    # Declare Arguments
+    # ________________ Declare Arguments ________________
     
-    # Initialized Arguments
+    # ________________ Initialized Arguments ________________
 
-    # Robot State Publisher
+    # ________________ Robot State Publisher ________________
     args_robot_state_publisher = {'use_sim_time': 'false', 'use_ros2_control': 'true'}
     node_robot_state_publisher = get_launch_file('rsp.launch.py', args_robot_state_publisher)
 
-    # ros2_control Controller Manager
+    # ________________ ros2_control Controller Manager ________________
     args_controller_manager = {}
     node_controller_manager = get_launch_file('controller_manager.launch.py', args_controller_manager)
 
-    # # pre-packaged Forward Position Controller. Delay until Controller Manager launches.
-    print("z")
-    controller_config_yaml = PathJoinSubstitution(
+    # ________________ pre-packaged Forward Position Controller. ________________
+    # Delay until Controller Manager launches. 
+    config_controller_yaml = PathJoinSubstitution(
         [
             FindPackageShare(package_name),
             "config",
             "controller.yaml",
         ]
     )
-    print("s")
     args_controller = {}
     node_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["my_forward_position_controller", "--param-file", controller_config_yaml],
+        arguments=["my_forward_position_controller", "--param-file", config_controller_yaml],
     )
-    print("w")
 
+    # external_cm_nodes = node_controller_manager.get_sub_entities()[0].describe_sub_entities()
+    # external_cm_node = next(node for node in external_cm_nodes if node.node_package == 'controller_manager')
     # node_delay_controller = RegisterEventHandler(
     #     event_handler=OnProcessExit(
-    #         target_action=node_controller_manager,
+    #         target_action=external_cm_node,
     #         on_exit=[node_controller],
     #     )
     # )
-    print("b")
 
-    # Joint Broadcast
+    # ________________ Joint Broadcast ________________
     # Joint State Broadcast different that Joint State Publisher?
     node_joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -71,7 +70,7 @@ def generate_launch_description():
     #         "/controller_manager",
     #     ],
     # )
-    print("a")
+
     # node_delay_joint_state_broadcaster_spawner = RegisterEventHandler(
     #     event_handler=OnProcessExit(
     #         target_action=node_controller_manager,
@@ -79,15 +78,8 @@ def generate_launch_description():
     #     )
     # )
 
-    # RViz (uses config file)
-    # node_rviz = get_launch_file('rviz.launch.py', {})
-    # node_delay_rviz = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=node_delay_joint_state_broadcaster_spawner,
-    #         on_start=[node_rviz],
-    #     )
-    # )
-    rviz_config_file = PathJoinSubstitution(
+    # ________________ RViz ________________
+    config_rviz = PathJoinSubstitution(
         [FindPackageShare("base_package"), "config", "view_bot.rviz"]
     )
     node_rviz = Node(
@@ -95,10 +87,17 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         output="log",
-        arguments=["-d", rviz_config_file]
+        arguments=["-d", config_rviz]
     )
 
-    # Launch all
+    # node_delay_rviz = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=node_delay_joint_state_broadcaster_spawner,
+    #         on_start=[node_rviz],
+    #     )
+    # )
+
+    # ________________ Launch all ________________
     return LaunchDescription([
         node_robot_state_publisher,
         node_controller_manager,
