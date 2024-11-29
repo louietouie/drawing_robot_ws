@@ -19,7 +19,7 @@ target_compile_features(base_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and
 
 install(
   # TARGETS base_node
-  DIRECTORY config models launch worlds
+  DIRECTORY bringup/config bringup/launch models worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
