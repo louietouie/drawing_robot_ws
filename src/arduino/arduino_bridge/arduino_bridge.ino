@@ -3,14 +3,11 @@
 #include "driver.h"
 
 void setup() {
-  Serial.begin(9600);
   setupCAN();
   motor::setup();
-  // enable pin up/downs
 }
 
 void loop() {
-  delay(500);
   if (readCAN()) {
     decipherMessage();
   }
@@ -20,7 +17,6 @@ void decipherMessage() {
   // python is hex(-7420924 & 0xFFFFFFFF)
   char command = canMsg.data[0];
   int32_t value = ((int32_t) canMsg.data[1]<<24) + ((int32_t) canMsg.data[2]<<16) + ((int32_t) canMsg.data[3]<<8) + ((int32_t) canMsg.data[4]);
-  // Serial.println(value);
 
   switch (command) {
     case E_STOP:
