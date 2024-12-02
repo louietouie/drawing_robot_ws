@@ -61,11 +61,18 @@ def generate_launch_description():
         arguments=["my_joint_state_broadcaster"],
     )
 
+    delay = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=node_controller,
+            on_exit=[node_joint_state_broadcaster_spawner]
+        )
+    )
+
     # node_joint_state_broadcaster_spawner = Node(
     #     package="controller_manager",
     #     executable="spawner",
     #     arguments=[
-    #         "joint_state_broadcaster",
+    #         "my_joint_state_broadcaster",
     #         "--controller-manager",
     #         "/controller_manager",
     #     ],
@@ -105,8 +112,9 @@ def generate_launch_description():
         # node_delay_controller,
         # node_delay_joint_state_broadcaster_spawner,
         # node_delay_rviz
-        node_rviz,
-        node_joint_state_broadcaster_spawner
+        # node_rviz,
+        # node_joint_state_broadcaster_spawner
+        delay
     ])
 
 def get_launch_file(file_name, launch_args):
