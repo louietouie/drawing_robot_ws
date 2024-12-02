@@ -12,6 +12,7 @@
     <xacro:include filename="helper/base_robot.xacro"/>
 
     <!-- import ros2_control -->
-    <xacro:include filename="helper/robot.ros2_control.xacro"/>
+    <!-- <xacro:include filename="helper/robot.ros2_control.xacro"/> -->
+    <xacro:include filename="helper/actuator.ros2_control.xacro"/>
 
 </robot>
