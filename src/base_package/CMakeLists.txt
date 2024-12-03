@@ -35,7 +35,7 @@ endforeach()
 add_library(
   base_package
   SHARED
-  hardware/rrbot.cpp
+  hardware/rrbot.cpp hardware/can_comms.cpp
 )
 target_compile_features(base_package PUBLIC cxx_std_17)
 target_include_directories(base_package PUBLIC

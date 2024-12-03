@@ -27,6 +27,8 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
+#include "can_comms.hpp"
+
 namespace base_package
 {
 class RRBotSystemPositionOnlyHardware : public hardware_interface::SystemInterface
@@ -57,6 +59,8 @@ private:
   double hw_start_sec_;
   double hw_stop_sec_;
   double hw_slowdown_;
+
+  CanBusComms can_connection_;
 };
 
 }  // namespace ros2_control_demo_example_1

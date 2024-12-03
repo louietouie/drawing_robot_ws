@@ -81,6 +81,10 @@ hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_init(
     }
   }
 
+  printf("dog");
+  can_connection_.setup();
+  printf("cat");
+
   return hardware_interface::CallbackReturn::SUCCESS;
 }
 
