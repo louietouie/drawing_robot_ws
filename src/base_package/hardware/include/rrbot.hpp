@@ -42,6 +42,10 @@ public:
   hardware_interface::CallbackReturn on_configure(
     const rclcpp_lifecycle::State & previous_state) override;
 
+  std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+
+  std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+
   hardware_interface::CallbackReturn on_activate(
     const rclcpp_lifecycle::State & previous_state) override;
 
@@ -59,6 +63,9 @@ private:
   double hw_start_sec_;
   double hw_stop_sec_;
   double hw_slowdown_;
+
+  double hw_joint_command_;
+  double hw_joint_state_;
 
   CanBusComms can_connection_;
 };

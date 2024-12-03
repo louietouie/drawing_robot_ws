@@ -44,6 +44,9 @@ hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_init(
   hw_slowdown_ = stod(info_.hardware_parameters["example_param_hw_slowdown"]);
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
+  hw_joint_state_ = std::numeric_limits<double>::quiet_NaN();
+  hw_joint_command_ = std::numeric_limits<double>::quiet_NaN();
+
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
     // RRBotSystemPositionOnly has exactly one state and command interface on each joint
@@ -94,25 +97,47 @@ hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_configure
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(get_logger(), "Configuring ...please wait...");
 
-  for (int i = 0; i < hw_start_sec_; i++)
-  {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
-  }
+  // for (int i = 0; i < hw_start_sec_; i++)
+  // {
+  //   rclcpp::sleep_for(std::chrono::seconds(1));
+  //   RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
+  // }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   // reset values always when configuring hardware
-  for (const auto & [name, descr] : joint_state_interfaces_)
-  {
-    set_state(name, 0.0);
-  }
-  for (const auto & [name, descr] : joint_command_interfaces_)
-  {
-    set_command(name, 0.0);
-  }
+  // for (const auto & [name, descr] : joint_state_interfaces_)
+  // {
+  //   set_state(name, 0.0);
+  //   RCLCPP_INFO(get_logger(), "beep beep.");
+  // }
+  // for (const auto & [name, descr] : joint_command_interfaces_)
+  // {
+  //   set_command(name, 0.0);
+  // }
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
+}
+
+std::vector<hardware_interface::StateInterface> RRBotSystemPositionOnlyHardware::export_state_interfaces()
+{
+  std::vector<hardware_interface::StateInterface> state_interfaces;
+
+  state_interfaces.emplace_back(hardware_interface::StateInterface(
+    info_.joints[0].name, hardware_interface::HW_IF_POSITION, &hw_joint_state_));
+
+  return state_interfaces;
+}
+
+
+std::vector<hardware_interface::CommandInterface> RRBotSystemPositionOnlyHardware::export_command_interfaces()
+{
+  std::vector<hardware_interface::CommandInterface> command_interfaces;
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+    info_.joints[0].name, hardware_interface::HW_IF_POSITION, &hw_joint_command_));
+
+  return command_interfaces;
 }
 
 hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_activate(
@@ -121,18 +146,18 @@ hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_activate(
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(get_logger(), "Activating ...please wait...");
 
-  for (int i = 0; i < hw_start_sec_; i++)
-  {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
-  }
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
+  // for (int i = 0; i < hw_start_sec_; i++)
+  // {
+  //   rclcpp::sleep_for(std::chrono::seconds(1));
+  //   RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
+  // }
+  // // END: This part here is for exemplary purposes - Please do not copy to your production code
 
-  // command and state should be equal when starting
-  for (const auto & [name, descr] : joint_state_interfaces_)
-  {
-    set_command(name, get_state(name));
-  }
+  // // command and state should be equal when starting
+  // for (const auto & [name, descr] : joint_state_interfaces_)
+  // {
+  //   set_command(name, get_state(name));
+  // }
 
   RCLCPP_INFO(get_logger(), "Successfully activated!");
 
@@ -160,40 +185,22 @@ hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_deactivat
 hardware_interface::return_type RRBotSystemPositionOnlyHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  std::stringstream ss;
-  ss << "Reading states:";
-
-  for (const auto & [name, descr] : joint_state_interfaces_)
-  {
-    // Simulate RRBot's movement
-    auto new_value = get_state(name) + (get_command(name) - get_state(name)) / hw_slowdown_;
-    set_state(name, new_value);
-    ss << std::fixed << std::setprecision(2) << std::endl
-       << "\t" << get_state(name) << " for joint '" << name << "'";
+  // LOUIS: will this be blocking, send position request and wait for position response?
+  if (!can_connection_.isConnected()) {
+    return hardware_interface::return_type::ERROR;
   }
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
-
+  can_connection_.readMotorPosition(hw_joint_state_);
   return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type RRBotSystemPositionOnlyHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  std::stringstream ss;
-  ss << "Writing commands:";
-
-  for (const auto & [name, descr] : joint_command_interfaces_)
-  {
-    // Simulate sending commands to the hardware
-    ss << std::fixed << std::setprecision(2) << std::endl
-       << "\t" << get_command(name) << " for joint '" << name << "'";
+  if (!can_connection_.isConnected()) {
+    return hardware_interface::return_type::ERROR;
   }
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
-
+  printf("%lf", hw_joint_command_);
+  can_connection_.sendMotorCommand(hw_joint_command_);
   return hardware_interface::return_type::OK;
 }
 

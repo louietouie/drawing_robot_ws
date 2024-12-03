@@ -19,15 +19,18 @@ class CanBusComms {
         // }
 
         void setup();
-        void sendFrame();
-        void readFrame();
+        void sendMotorCommand(double command);
+        void readMotorPosition(double &position);
         void shutdown();
+        bool isConnected();
 
     private:
         int s;
         struct sockaddr_can addr;
         struct can_frame frame;
         struct ifreq ifr;
+
+        void sendRaw();
 };
 
 #endif
