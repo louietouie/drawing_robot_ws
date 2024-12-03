@@ -12,63 +12,40 @@
 
 void CanBusComms::setup() {
 
-    memset(&frame, 0, sizeof(struct can_frame));
-
-    system("sudo ip link set can0 type can bitrate 1000000");
-    system("sudo ifconfig can0 up");
-    printf("this is a can send demo\r\n");
-        
-    //1.Create socket
+    // Create a socket
     s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (s < 0) {
-        perror("socket PF_CAN failed");
-        printf("poop");
+        perror("Socket creation failed");
+        return;
     }
 
-    //2.Specify can0 device
+    // Specify the CAN interface
     strcpy(ifr.ifr_name, "can0");
-    ret = ioctl(s, SIOCGIFINDEX, &ifr);
-    if (ret < 0) {
-        perror("ioctl failed");
-        printf("poop");
-    }
-
-    //3.Bind the socket to can0
+    ioctl(s, SIOCGIFINDEX, &ifr);
+    
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
-    ret = bind(s, (struct sockaddr *)&addr, sizeof(addr));
-    if (ret < 0) {
-        perror("bind failed");
-        printf("poop");
+
+    // Bind the socket to the CAN interface
+    if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        perror("Bind failed");
+        return;
     }
 
-    //4.Disable filtering rules, do not receive packets, only send
-    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, NULL, 0);
-
-    //5.Set send data
+    // Create a CAN frame to send
     frame.can_id = 0x123;
-    frame.can_dlc = 8;
-    frame.data[0] = 1;
-    frame.data[1] = 2;
-    frame.data[2] = 3;
-    frame.data[3] = 4;
-    frame.data[4] = 5;
-    frame.data[5] = 6;
-    frame.data[6] = 7;
-    frame.data[7] = 8;
+    frame.can_dlc = 4; // Data length
+    frame.data[0] = 0x11;
+    frame.data[1] = 0x06;
+    frame.data[2] = 0x35;
+    frame.data[3] = 0x09;
 
-    printf("can_id  = 0x%X\r\n", frame.can_id);
-    printf("can_dlc = %d\r\n", frame.can_dlc);
-    int i = 0;
-    for(i = 0; i < 8; i++)
-        printf("data[%d] = %d\r\n", i, frame.data[i]);
-
-    //6.Send message
-    nbytes = write(s, &frame, sizeof(frame)); 
-    if(nbytes != sizeof(frame)) {
-        printf("Send Error frame[0]!\r\n");
-        system("sudo ifconfig can0 down");
+    // Send the CAN frame
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+        perror("Write failed");
+        return;
     }
+    printf("Message sent\n");
 
 }
 
@@ -82,7 +59,7 @@ void CanBusComms::readFrame() {
 
 void CanBusComms::shutdown() {
     close(s);
-    system("sudo ifconfig can0 down");
+    printf("closed\n");
 }
 
 // class CanBusComms {

@@ -24,11 +24,10 @@ class CanBusComms {
         void shutdown();
 
     private:
-        int ret;
-        int s, nbytes;
+        int s;
         struct sockaddr_can addr;
-        struct ifreq ifr;
         struct can_frame frame;
+        struct ifreq ifr;
 };
 
 #endif
