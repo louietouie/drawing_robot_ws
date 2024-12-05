@@ -2,13 +2,18 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <ros2_control name="shoulder_interface" type="system">
-        <hardware>
+        <!-- <hardware>
             <plugin>mock_components/GenericSystem</plugin>
+        </hardware> -->
+        <hardware>
+            <plugin>odrive_ros2_control_plugin/ODriveHardwareInterface</plugin>
+            <param name="can">can0</param>
         </hardware>
 
         <joint name="shoulder">
             <!-- can use position or velocity port to connect a controller -->
-            <command_interface name="position">
+            <param name="node_id">0</param>
+            <!-- <command_interface name="position">
                 <param name="min">-1</param>
                 <param name="max">1</param>
             </command_interface>
@@ -17,7 +22,7 @@
                 <param name="max">1</param>
             </command_interface>
             <state_interface name="position"/>
-            <state_interface name="velocity"/>
+            <state_interface name="velocity"/> -->
         </joint>
     </ros2_control>
 
