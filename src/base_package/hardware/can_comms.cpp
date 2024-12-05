@@ -47,20 +47,12 @@ void CanBusComms::setup() {
 
 void CanBusComms::sendMotorCommand(double command) {
 
-    unsigned char bytes[8];
-    memcpy(bytes, &command, sizeof(double));
+    float arduinoFriendly = (float) command;
+    memcpy(frame.data, &arduinoFriendly, sizeof(float));
 
     frame.can_id = 0x123;
-    frame.can_dlc = 8; // Data length
-    frame.data[0] = 0x70; // position bit
+    frame.can_dlc = 8;
 
-    for (int i = 0; i < 8; i++) {
-        frame.data[i+1] = bytes[i];
-    }
-
-    // frame.data[1] = command >> 8;
-    // frame.data[2] = command >> 16;
-    // frame.data[3] = command >> 24;
     sendRaw();
 }
 
