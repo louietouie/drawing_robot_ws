@@ -5,7 +5,7 @@ struct can_frame canMsg;
 
 void setupCAN() {
   mcp2515.reset();
-  mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ);
+  mcp2515.setBitrate(CAN_250KBPS, MCP_8MHZ);
   mcp2515.setNormalMode();
 }
 
