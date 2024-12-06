@@ -70,7 +70,7 @@ void CanBusComms::sendRaw() {
         perror("Write failed");
         return;
     }
-    printf("Message sent\n");
+    // printf("Message sent\n");
 }
 
 bool CanBusComms::isConnected() {
