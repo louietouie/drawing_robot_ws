@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 10  # Hz
+    update_rate: 100  # Hz
     lock_memory: false # necessary on RPi to prevent memory failures
     # use_sim_time: true
 
