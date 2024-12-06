@@ -1,73 +1,111 @@
 #include "can.h"
 #include "commands.h"
 #include "driver.h"
+#include "environment_variables.h"
+
+const float convertRadianToStep = (1./(2 * pi)) * stepperSPR * microstep;
+uint32_t lastHeartbeat;
+bool isHeartbeatActive = true;
 
 void setup() {
   Serial.begin(9600);
   setupCAN();
   motor::setup();
+  lastHeartbeat = micros();
 }
 
 void loop() {
+  motor::checkLimits();
+
   if (readCAN()) {
     decipherMessage();
+  }
+
+  if (isHeartbeatActive && heartbeat()) {
+    sendState();
   }
 }
 
 void decipherMessage() {
-  // python is hex(-7420924 & 0xFFFFFFFF)
 
-  // double messages are getting sent with most significant byte in [7]
-  // 423.2 is getting sent from RPi to Arduino as 33, 33, 33, 33, 33, 73, 7A, 40, and Arduino doesn't understand it
-
-  char command = canMsg.data[0];
-
+  if ((canMsg.can_id & maskCanID) != acceptedCanID) {return;}
+  int commandID = canMsg.can_id & ~maskCanID;
+  // Serial.println(commandID, HEX);
   float value;
-  memcpy(&value, canMsg.data, sizeof(float));
+  if (canMsg.can_dlc == 4) {
+    memcpy(&value, canMsg.data, sizeof(float));
+    if (isnan(value)) {return;}
+  }
+  // Serial.println(value);
 
-  if (canMsg.can_id != 0x123) {return;}
-  // Serial.println("recieved fake");
-  // Serial.println(canMsg.can_id, HEX);
-  Serial.print("Variable_1:");
-  Serial.println(value);
+  switch (commandID) {
+    case E_STOP:
+      motor::stop();
+      break;
+    case HEARTBEAT:
+      isHeartbeatActive = canMsg.data[0];
+      break;
+    case GET_STATE:
+      sendState();
+      break;
+    case SET_ACCEL:
+      motor::setAcceleration(radianToStep(value));
+      break;
+    case SET_POSITION:
+      motor::setPosition(radianToStep(value));
+      break;
+    case SET_SPEED_LIMIT:
+      motor::setMaxSpeed(radianToStep(value));
+      break;
+    case SET_POSITION_LIMIT:
+      motor::setMaxPosition(radianToStep(value));
+      break;
+    case SET_POSITION_LIM_FLAG:
+      motor::setIsPositionLimited(canMsg.data[0]);
+      break;
+    case ECHO:
+      canMsg.can_id = 0x200;
+      canMsg.can_dlc = 2;
+      canMsg.data[0] = canMsg.data[0];
+      canMsg.data[1] = canMsg.data[1];
+      writeCAN();
+      break;
+  }
 
-  // int32_t value = ((int32_t) canMsg.data[1]<<24) + ((int32_t) canMsg.data[2]<<16) + ((int32_t) canMsg.data[3]<<8) + ((int32_t) canMsg.data[4]);
+}
 
-  // switch (command) {
-  //   case E_STOP:
-  //     motor::stop();
-  //     break;
-  //   case SET_ACCEL:
-  //     motor::setAcceleration(value);
-  //     break;
-  //   case SET_SPEED:
-  //     motor::setAcceleration(value);
-  //     break;
-  //   case SET_POSITION:
-  //     motor::setPosition(value);
-  //     break;  
-  //   case GET_STATE:
-  //     canMsg.can_id = 0x200;
-  //     canMsg.can_dlc = 8;
-  //     int32_t position = motor::getPosition();
-  //     int32_t speed = motor::getSpeed();
-  //     canMsg.data[0] = position >> 24;
-  //     canMsg.data[1] = position >> 16;
-  //     canMsg.data[2] = position >> 8;
-  //     canMsg.data[3] = position;
-  //     canMsg.data[4] = speed >> 24;
-  //     canMsg.data[5] = speed >> 16;
-  //     canMsg.data[6] = speed >> 8;
-  //     canMsg.data[7] = speed;
-  //     writeCAN();
-  //     break;
-  //   case ECHO:
-  //     canMsg.can_id = 0x200;
-  //     canMsg.can_dlc = 2;
-  //     canMsg.data[0] = command;
-  //     canMsg.data[1] = canMsg.data[1];
-  //     writeCAN();
-  //     break;
-  // }
+void sendState() {
+  canMsg.can_id = heartbeatCanID;
+  canMsg.can_dlc = 8;
+  float position = radianToStep(motor::getPosition());
+  float speed = radianToStep(motor::getSpeed());
+  byte posA[4];
+  byte speA[4];
+  memcpy(posA, &position, sizeof(float));
+  memcpy(speA, &speed, sizeof(float));
+  canMsg.data[0] = posA[0];
+  canMsg.data[1] = posA[1];
+  canMsg.data[2] = posA[2];
+  canMsg.data[3] = posA[3];
+  canMsg.data[4] = speA[0];
+  canMsg.data[5] = speA[1];
+  canMsg.data[6] = speA[2];
+  canMsg.data[7] = speA[3];
+  writeCAN();
+}
 
+bool heartbeat() {
+  if (micros() - lastHeartbeat > heartbeatMicroPeriod) {
+    lastHeartbeat = micros();
+    return true;
+  }
+  return false;
+}
+
+int32_t radianToStep(float radians) {
+  return round(radians * convertRadianToStep);
+}
+
+float radianToStep(int32_t radians) {
+  return radians / convertRadianToStep;
 }

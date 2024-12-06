@@ -31,14 +31,27 @@
     int32_t getPosition();
     int32_t getSpeed();
     void setPosition(int32_t);
-    void setSpeed(int32_t);
     void setAcceleration(int32_t);
+    void setMaxSpeed(int32_t);
+    void setMaxPosition(int32_t);
+    void setIsPositionLimited(bool);
+    void checkLimits();
+
+    bool isPositionExceeded();
+    bool isCurrentPositionAcceptable();
+    bool forceStopOnLimit();
+    int32_t clampAcceleration(int32_t);
+    int32_t clampPosition(int32_t);
     void initializeMotorProperties();
+    void initializeDriverProperties();
 
     extern uint32_t _handoverSteps;
     extern uint32_t _jumpstartSteps;
     extern uint32_t _maxSpeedStepsS;
     extern uint32_t _maxAccelStepsSS;
+
+    extern int32_t _positionStepLimit;
+    extern bool     _isPositionLimited;
 
   }
 
