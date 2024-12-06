@@ -50,14 +50,19 @@ void CanBusComms::sendMotorCommand(double command) {
     float arduinoFriendly = (float) command;
     memcpy(frame.data, &arduinoFriendly, sizeof(float));
 
-    frame.can_id = 0x123;
-    frame.can_dlc = 8;
+    frame.can_id = 0x764;
+    frame.can_dlc = 4;
 
     sendRaw();
 }
 
 void CanBusComms::readMotorPosition(double &position) {
-    position = 1;   
+    position = 1;
+    readRaw();
+
+    float convertedPosition;
+    memcpy(&convertedPosition, frame.data, sizeof(float));
+    position = convertedPosition;
 }
 
 void CanBusComms::shutdown() {
@@ -71,6 +76,23 @@ void CanBusComms::sendRaw() {
         return;
     }
     // printf("Message sent\n");
+}
+
+void CanBusComms::readRaw() {
+
+    // add filter
+    struct can_filter rfilter[1];
+    rfilter[0].can_id = 0x660;
+    rfilter[0].can_mask = CAN_SFF_MASK;
+    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, &rfilter, sizeof(rfilter));
+
+    // read message into frame
+    nbytes = read(s, &frame, sizeof(struct can_frame));
+
+    if (nbytes < 0) {
+        perror("Read");
+        return;
+    }
 }
 
 bool CanBusComms::isConnected() {

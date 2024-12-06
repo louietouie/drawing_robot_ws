@@ -26,11 +26,13 @@ class CanBusComms {
 
     private:
         int s;
+        int nbytes;
         struct sockaddr_can addr;
         struct can_frame frame;
         struct ifreq ifr;
 
         void sendRaw();
+        void readRaw();
 };
 
 #endif

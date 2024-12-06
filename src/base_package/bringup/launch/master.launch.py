@@ -61,7 +61,7 @@ def generate_launch_description():
         arguments=["my_joint_state_broadcaster"],
     )
 
-    delay = RegisterEventHandler(
+    node_delay_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=node_controller,
             on_exit=[node_joint_state_broadcaster_spawner]
@@ -94,15 +94,15 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         output="log",
-        arguments=["-d", config_rviz]
+        # arguments=["-d", config_rviz]
     )
 
-    # node_delay_rviz = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=node_delay_joint_state_broadcaster_spawner,
-    #         on_start=[node_rviz],
-    #     )
-    # )
+    node_delay_rviz = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=node_joint_state_broadcaster_spawner,
+            on_exit=[node_rviz],
+        )
+    )
 
     # ________________ Launch all ________________
     return LaunchDescription([
@@ -111,10 +111,10 @@ def generate_launch_description():
         node_controller,
         # node_delay_controller,
         # node_delay_joint_state_broadcaster_spawner,
-        # node_delay_rviz
+        node_delay_rviz,
         # node_rviz,
         # node_joint_state_broadcaster_spawner
-        delay
+        node_delay_joint_state_broadcaster_spawner
     ])
 
 def get_launch_file(file_name, launch_args):
