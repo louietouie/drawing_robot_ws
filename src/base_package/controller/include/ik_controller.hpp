@@ -1,6 +1,6 @@
 // LOUIS: ROS2 Forward Command Controller
 
-/ Copyright 2021 Stogl Robotics Consulting UG (haftungsbescrhänkt)
+// Copyright 2021 Stogl Robotics Consulting UG (haftungsbescrhänkt)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -76,13 +76,13 @@ public:
 
 protected:
   /**
-   * Derived controllers have to declare parameters in this method.
+   * Declare parameters in this method.
    * Error handling does not have to be done. It is done in `on_init`-method of this class.
    */
-  virtual void declare_parameters() = 0;
+  void declare_parameters(); 
 
   /**
-   * Derived controllers have to read parameters in this method and set `command_interface_types_`
+   * Read parameters in this method and set `command_interface_types_`
    * variable. The variable is then used to propagate the command interface configuration to
    * controller manager. The method is called from `on_configure`-method of this class.
    *
@@ -91,7 +91,7 @@ protected:
    * \returns controller_interface::CallbackReturn::SUCCESS if parameters are successfully read and
    * their values are allowed, controller_interface::CallbackReturn::ERROR otherwise.
    */
-  virtual controller_interface::CallbackReturn read_parameters() = 0;
+  controller_interface::CallbackReturn read_parameters();
 
   std::vector<std::string> joint_names_;
   std::string interface_name_;
@@ -100,6 +100,9 @@ protected:
 
   realtime_tools::RealtimeBuffer<std::shared_ptr<CmdType>> rt_command_ptr_;
   rclcpp::Subscription<CmdType>::SharedPtr joints_command_subscriber_;
+
+  std::shared_ptr<ParamListener> param_listener_;
+  Params params_;
 };
 
 }  // namespace forward_command_controller

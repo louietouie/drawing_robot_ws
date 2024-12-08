@@ -2,9 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <ros2_control name="shoulder_interface" type="system">
-        <!-- <hardware>
-            <plugin>mock_components/GenericSystem</plugin>
-        </hardware> -->
+
         <hardware>
             <plugin>odrive_ros2_control_plugin/ODriveHardwareInterface</plugin>
             <param name="can">can0</param>
@@ -12,21 +10,14 @@
 
         <joint name="shoulder">
             <!-- can use position or velocity port to connect a controller -->
+            <!-- why aren't the command_interface and state_interface tags required here when using ODriveHardwareInterface? -->
             <param name="node_id">0</param>
-            <!-- <command_interface name="position">
-                <param name="min">-1</param>
-                <param name="max">1</param>
-            </command_interface>
-            <command_interface name="velocity">
-                <param name="min">-1</param>
-                <param name="max">1</param>
-            </command_interface>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/> -->
         </joint>
+
     </ros2_control>
 
     <ros2_control name="elbow_interface" type="system">
+
         <hardware>
             <plugin>base_package/RRBotSystemPositionOnlyHardware</plugin>
             <param name="example_param_hw_start_duration_sec">0</param>
@@ -40,8 +31,8 @@
                 <param name="max">1</param>
             </command_interface>
             <state_interface name="position"/>
-            <!-- <state_interface name="velocity"/> -->
         </joint>
+        
     </ros2_control>
     
 </robot>

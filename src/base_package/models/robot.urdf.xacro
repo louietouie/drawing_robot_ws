@@ -5,14 +5,22 @@
 
     <!-- chose hardware interface -->
     <xacro:arg name="use_mode_mock_hardware" default="false"/>
-    <xacro:arg name="use_mode_classic_gazebo" default="false"/>
     <xacro:arg name="use_mode_gazebo" default="false"/>
 
     <!-- import robot -->
     <xacro:include filename="helper/base_robot.xacro"/>
 
-    <!-- import ros2_control -->
-    <!-- <xacro:include filename="helper/robot.ros2_control.xacro"/> -->
-    <xacro:include filename="helper/actuator.ros2_control.xacro"/>
+    <!-- import hardware interface -->
+    <xacro:if value="$(arg use_mode_mock_hardware)">
+        <xacro:include filename="helper/ros2_control_hardware_interfaces/mock.ros2_control.xacro"/>
+    </xacro:if>
+    <xacro:unless value="$(arg use_mode_mock_hardware)">
+        <xacro:if value="$(arg use_mode_gazebo)">
+            <xacro:include filename="helper/ros2_control_hardware_interfaces/sim.ros2_control.xacro"/>
+        </xacro:if>
+        <xacro:unless value="$(arg use_mode_gazebo)">
+            <xacro:include filename="helper/ros2_control_hardware_interfaces/real.ros2_control.xacro"/>
+        </xacro:unless>
+    </xacro:unless>
 
 </robot>

@@ -21,7 +21,7 @@ def generate_launch_description():
     # ________________ Initialized Arguments ________________
 
     # ________________ Robot State Publisher ________________
-    args_robot_state_publisher = {'use_sim_time': 'false', 'use_ros2_control': 'true'}
+    args_robot_state_publisher = {'mock_mode': 'true', 'sim_mode': 'false'}
     node_robot_state_publisher = get_launch_file('rsp.launch.py', args_robot_state_publisher)
 
     # ________________ ros2_control Controller Manager ________________
@@ -94,7 +94,7 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         output="log",
-        # arguments=["-d", config_rviz]
+        arguments=["-d", config_rviz]
     )
 
     node_delay_rviz = RegisterEventHandler(
