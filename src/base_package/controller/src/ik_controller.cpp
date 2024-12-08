@@ -1,6 +1,6 @@
-// LOUIS: ROS2 Control Example 10
+// LOUIS: ROS2 Forward Command Controller
 
-// Copyright 2023 ros2_control Development Team
+// Copyright 2021 Stogl Robotics Consulting UG (haftungsbescrhänkt)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,140 +14,135 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ros2_control_demo_example_10/gpio_controller.hpp"
+#include "forward_command_controller/forward_controllers_base.hpp"
 
+#include <memory>
 #include <string>
+#include <vector>
 
-namespace ros2_control_demo_example_10
+#include "controller_interface/helpers.hpp"
+#include "hardware_interface/loaned_command_interface.hpp"
+#include "rclcpp/logging.hpp"
+#include "rclcpp/qos.hpp"
+
+namespace forward_command_controller
 {
-controller_interface::CallbackReturn GPIOController::on_init()
+ForwardControllersBase::ForwardControllersBase()
+: controller_interface::ControllerInterface(),
+  rt_command_ptr_(nullptr),
+  joints_command_subscriber_(nullptr)
+{
+}
+
+controller_interface::CallbackReturn ForwardControllersBase::on_init()
 {
   try
   {
-    auto_declare<std::vector<std::string>>("inputs", std::vector<std::string>());
-    auto_declare<std::vector<std::string>>("outputs", std::vector<std::string>());
+    declare_parameters();
   }
   catch (const std::exception & e)
   {
     fprintf(stderr, "Exception thrown during init stage with message: %s \n", e.what());
     return controller_interface::CallbackReturn::ERROR;
   }
+
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::InterfaceConfiguration GPIOController::command_interface_configuration() const
+controller_interface::CallbackReturn ForwardControllersBase::on_configure(
+  const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  config.names = outputs_;
+  auto ret = this->read_parameters();
+  if (ret != controller_interface::CallbackReturn::SUCCESS)
+  {
+    return ret;
+  }
 
-  return config;
+  joints_command_subscriber_ = get_node()->create_subscription<CmdType>(
+    "~/commands", rclcpp::SystemDefaultsQoS(),
+    [this](const CmdType::SharedPtr msg) { rt_command_ptr_.writeFromNonRT(msg); });
+
+  RCLCPP_INFO(get_node()->get_logger(), "configure successful");
+  return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::InterfaceConfiguration GPIOController::state_interface_configuration() const
+controller_interface::InterfaceConfiguration
+ForwardControllersBase::command_interface_configuration() const
 {
-  controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  config.names = inputs_;
+  controller_interface::InterfaceConfiguration command_interfaces_config;
+  command_interfaces_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  command_interfaces_config.names = command_interface_types_;
 
-  return config;
+  return command_interfaces_config;
 }
 
-controller_interface::return_type GPIOController::update(
+controller_interface::InterfaceConfiguration ForwardControllersBase::state_interface_configuration()
+  const
+{
+  return controller_interface::InterfaceConfiguration{
+    controller_interface::interface_configuration_type::NONE};
+}
+
+controller_interface::CallbackReturn ForwardControllersBase::on_activate(
+  const rclcpp_lifecycle::State & /*previous_state*/)
+{
+  //  check if we have all resources defined in the "points" parameter
+  //  also verify that we *only* have the resources defined in the "points" parameter
+  // ATTENTION(destogl): Shouldn't we use ordered interface all the time?
+  std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>>
+    ordered_interfaces;
+  if (
+    !controller_interface::get_ordered_interfaces(
+      command_interfaces_, command_interface_types_, std::string(""), ordered_interfaces) ||
+    command_interface_types_.size() != ordered_interfaces.size())
+  {
+    RCLCPP_ERROR(
+      get_node()->get_logger(), "Expected %zu command interfaces, got %zu",
+      command_interface_types_.size(), ordered_interfaces.size());
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  // reset command buffer if a command came through callback when controller was inactive
+  rt_command_ptr_ = realtime_tools::RealtimeBuffer<std::shared_ptr<CmdType>>(nullptr);
+
+  RCLCPP_INFO(get_node()->get_logger(), "activate successful");
+  return controller_interface::CallbackReturn::SUCCESS;
+}
+
+controller_interface::CallbackReturn ForwardControllersBase::on_deactivate(
+  const rclcpp_lifecycle::State & /*previous_state*/)
+{
+  // reset command buffer
+  rt_command_ptr_ = realtime_tools::RealtimeBuffer<std::shared_ptr<CmdType>>(nullptr);
+  return controller_interface::CallbackReturn::SUCCESS;
+}
+
+controller_interface::return_type ForwardControllersBase::update(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // send inputs
-  for (size_t i = 0; i < state_interfaces_.size(); i++)
-  {
-    RCLCPP_DEBUG(
-      get_node()->get_logger(), "%s: (%f)", state_interfaces_[i].get_name().c_str(),
-      state_interfaces_[i].get_value());
-    gpio_msg_.values.at(i) = static_cast<float>(state_interfaces_.at(i).get_value());
-  }
-  gpio_publisher_->publish(gpio_msg_);
+  auto joint_commands = rt_command_ptr_.readFromRT();
 
-  // set outputs
-  if (!output_cmd_ptr_)
+  // no command received yet
+  if (!joint_commands || !(*joint_commands))
   {
-    // no command received yet
     return controller_interface::return_type::OK;
   }
-  if (output_cmd_ptr_->data.size() != command_interfaces_.size())
+
+  if ((*joint_commands)->data.size() != command_interfaces_.size())
   {
     RCLCPP_ERROR_THROTTLE(
       get_node()->get_logger(), *(get_node()->get_clock()), 1000,
-      "command size (%zu) does not match number of interfaces (%zu)", output_cmd_ptr_->data.size(),
-      command_interfaces_.size());
+      "command size (%zu) does not match number of interfaces (%zu)",
+      (*joint_commands)->data.size(), command_interfaces_.size());
     return controller_interface::return_type::ERROR;
   }
 
-  for (size_t i = 0; i < command_interfaces_.size(); i++)
+  for (auto index = 0ul; index < command_interfaces_.size(); ++index)
   {
-    command_interfaces_[i].set_value(output_cmd_ptr_->data[i]);
-    RCLCPP_DEBUG(
-      get_node()->get_logger(), "%s: (%f)", command_interfaces_[i].get_name().c_str(),
-      command_interfaces_[i].get_value());
+    command_interfaces_[index].set_value((*joint_commands)->data[index]);
   }
 
   return controller_interface::return_type::OK;
 }
 
-controller_interface::CallbackReturn GPIOController::on_configure(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
-  try
-  {
-    inputs_ = get_node()->get_parameter("inputs").as_string_array();
-    outputs_ = get_node()->get_parameter("outputs").as_string_array();
-
-    initMsgs();
-
-    // register publisher
-    gpio_publisher_ = get_node()->create_publisher<control_msgs::msg::InterfaceValue>(
-      "~/inputs", rclcpp::SystemDefaultsQoS());
-
-    // register subscriber
-    subscription_command_ = get_node()->create_subscription<CmdType>(
-      "~/commands", rclcpp::SystemDefaultsQoS(),
-      [this](const CmdType::SharedPtr msg) { output_cmd_ptr_ = msg; });
-  }
-  catch (...)
-  {
-    return LifecycleNodeInterface::CallbackReturn::ERROR;
-  }
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
-}
-
-void GPIOController::initMsgs()
-{
-  gpio_msg_.interface_names = inputs_;
-  gpio_msg_.values.resize(inputs_.size());
-}
-
-controller_interface::CallbackReturn GPIOController::on_activate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
-}
-
-controller_interface::CallbackReturn GPIOController::on_deactivate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
-  try
-  {
-    // reset publisher
-    gpio_publisher_.reset();
-  }
-  catch (...)
-  {
-    return LifecycleNodeInterface::CallbackReturn::ERROR;
-  }
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
-}
-
-}  // namespace ros2_control_demo_example_10
-
-#include "pluginlib/class_list_macros.hpp"
-
-PLUGINLIB_EXPORT_CLASS(
-  ros2_control_demo_example_10::GPIOController, controller_interface::ControllerInterface)
+}  // namespace forward_command_controller
