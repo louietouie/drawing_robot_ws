@@ -11,6 +11,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # find dependencies
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   hardware_interface
+  controller_interface
+  generate_parameter_library
+  realtime_tools
   pluginlib
   rclcpp
   rclcpp_lifecycle
@@ -31,17 +34,25 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
+# custom to generate_parameter_library to auto generate a header file
+generate_parameter_library(
+  ik_controller_parameters
+  controller/ik_controller_parameters.yaml
+)
+
 ## COMPILE
 add_library(
   base_package
   SHARED
   hardware/rrbot.cpp hardware/can_comms.cpp
+  controller/ik_controller.cpp
 )
 target_compile_features(base_package PUBLIC cxx_std_17)
 target_include_directories(base_package PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
 $<INSTALL_INTERFACE:include/base_package>
 )
+target_link_libraries(base_package PUBLIC ik_controller_parameters) # custom to generate_parameter_library
 ament_target_dependencies(
   base_package PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
@@ -49,6 +60,8 @@ ament_target_dependencies(
 
 # Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface base_package.xml)
+# Export controller plugins
+pluginlib_export_plugin_description_file(controller_interface base_package.xml)
 
 # INSTALL
 install(
@@ -63,7 +76,10 @@ install(
   DIRECTORY bringup/launch bringup/config
   DESTINATION share/base_package
 )
-install(TARGETS base_package
+install(
+  TARGETS
+    base_package
+    ik_controller_parameters
   EXPORT export_base_package
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

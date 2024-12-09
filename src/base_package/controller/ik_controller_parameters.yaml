@@ -1,7 +1,7 @@
 # LOUIS: ROS2 Forward Command Controller
 # I believe this is a template for what can be put in the actual YAML config file (in the bringup/config directory)
 
-forward_command_controller:
+base_package:
   joints: {
     type: string_array,
     default_value: [],

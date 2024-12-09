@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "forward_command_controller/forward_controllers_base.hpp"
+#include "include/ik_controller.hpp"
 
 #include <memory>
 #include <string>
@@ -25,16 +25,16 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/qos.hpp"
 
-namespace forward_command_controller
+namespace base_package
 {
-ForwardControllersBase::ForwardControllersBase()
+IKController::IKController()
 : controller_interface::ControllerInterface(),
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr)
 {
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_init()
+controller_interface::CallbackReturn IKController::on_init()
 {
   try
   {
@@ -49,7 +49,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_init()
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_configure(
+controller_interface::CallbackReturn IKController::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   auto ret = this->read_parameters();
@@ -67,7 +67,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_configure(
 }
 
 controller_interface::InterfaceConfiguration
-ForwardControllersBase::command_interface_configuration() const
+IKController::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration command_interfaces_config;
   command_interfaces_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
@@ -76,14 +76,14 @@ ForwardControllersBase::command_interface_configuration() const
   return command_interfaces_config;
 }
 
-controller_interface::InterfaceConfiguration ForwardControllersBase::state_interface_configuration()
+controller_interface::InterfaceConfiguration IKController::state_interface_configuration()
   const
 {
   return controller_interface::InterfaceConfiguration{
     controller_interface::interface_configuration_type::NONE};
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_activate(
+controller_interface::CallbackReturn IKController::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   //  check if we have all resources defined in the "points" parameter
@@ -109,7 +109,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_activate(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_deactivate(
+controller_interface::CallbackReturn IKController::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   // reset command buffer
@@ -117,7 +117,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_deactivate(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::return_type ForwardControllersBase::update(
+controller_interface::return_type IKController::update(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   auto joint_commands = rt_command_ptr_.readFromRT();
@@ -145,12 +145,12 @@ controller_interface::return_type ForwardControllersBase::update(
   return controller_interface::return_type::OK;
 }
 
-void ForwardControllersBase::declare_parameters()
+void IKController::declare_parameters()
 {
   param_listener_ = std::make_shared<ParamListener>(get_node());
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::read_parameters()
+controller_interface::CallbackReturn IKController::read_parameters()
 {
   if (!param_listener_)
   {
@@ -179,4 +179,9 @@ controller_interface::CallbackReturn ForwardControllersBase::read_parameters()
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-}  // namespace forward_command_controller
+}  // namespace base_package
+
+#include "pluginlib/class_list_macros.hpp"
+
+PLUGINLIB_EXPORT_CLASS(
+  base_package::IKController, controller_interface::ControllerInterface)

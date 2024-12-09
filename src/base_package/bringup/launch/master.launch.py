@@ -34,14 +34,15 @@ def generate_launch_description():
         [
             FindPackageShare(package_name),
             "config",
-            "controller.yaml",
+            "ik_controller.yaml",
         ]
     )
     args_controller = {}
     node_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["my_forward_position_controller", "--param-file", config_controller_yaml],
+        arguments=["my_ik_controller", "--param-file", config_controller_yaml],
+        #arguments=["my_forward_position_controller", "--param-file", config_controller_yaml],
     )
 
     # external_cm_nodes = node_controller_manager.get_sub_entities()[0].describe_sub_entities()

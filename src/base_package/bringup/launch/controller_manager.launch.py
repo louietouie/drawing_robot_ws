@@ -25,7 +25,7 @@ def generate_launch_description():
         [
             FindPackageShare(package_name),
             "config",
-            "controller.yaml",
+            "ik_controller.yaml",
         ]
     )
 

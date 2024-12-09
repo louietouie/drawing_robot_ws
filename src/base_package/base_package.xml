@@ -1,9 +1,19 @@
 <library path="base_package">
+
   <class name="base_package/RRBotSystemPositionOnlyHardware"
          type="base_package::RRBotSystemPositionOnlyHardware"
          base_class_type="hardware_interface::SystemInterface">
     <description>
-      The ros2_control RRbot example using a system hardware interface-type.
+      The arduino CAN bus hardware interface (Louis)
     </description>
   </class>
+
+  <class name="base_package/IKController"
+         type="base_package::IKController"
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      The inverse kinematic controller that uses Drake (Louis)
+    </description>
+  </class>
+
 </library>
