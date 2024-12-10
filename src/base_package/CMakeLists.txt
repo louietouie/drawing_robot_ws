@@ -90,3 +90,13 @@ install(
 ament_export_targets(export_base_package HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()
+
+## Louis notes
+## Built drake on Rpi5 Ubuntu 24.04 with...
+## bazel build //tools/install/libdrake:libdrake.so
+# INFO: Found 1 target...
+# Target //tools/install/libdrake:libdrake.so up-to-date:
+#   bazel-bin/tools/install/libdrake/libdrake.so
+# INFO: Elapsed time: 17295.341s, Critical Path: 156.09s
+# INFO: 8175 processes: 4062 internal, 4113 processwrapper-sandbox.
+# INFO: Build completed successfully, 8175 total actions
