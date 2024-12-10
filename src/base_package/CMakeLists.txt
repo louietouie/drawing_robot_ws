@@ -9,9 +9,9 @@ endif()
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # set(drake_DIR /home/louis/drake/tools/install/libdrake)
-set(drake_DIR /home/louis/drake/bazel-drake/tools/install/libdrake)
-
-list(APPEND CMAKE_PREFIX_PATH /home/louis/drake/tools/install)
+set(drake_DIR /home/louis/drake/bazel-bin/tools/install/libdrake)
+# set(drake_DIR /home/louis/drake/bazel-drake/tools/install/libdrake)
+# list(APPEND CMAKE_PREFIX_PATH /home/louis/drake/bazel-bin/tools/install/libdrake)
 
 # find dependencies
 set(THIS_PACKAGE_INCLUDE_DEPENDS
