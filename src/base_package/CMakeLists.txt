@@ -8,6 +8,11 @@ endif()
 # set the same behavior for windows as it is on linux
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+# set(drake_DIR /home/louis/drake/tools/install/libdrake)
+set(drake_DIR /home/louis/drake/bazel-drake/tools/install/libdrake)
+
+list(APPEND CMAKE_PREFIX_PATH /home/louis/drake/tools/install)
+
 # find dependencies
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   hardware_interface
@@ -30,6 +35,7 @@ endif()
 # find dependencies
 find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(drake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
@@ -52,7 +58,10 @@ target_include_directories(base_package PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
 $<INSTALL_INTERFACE:include/base_package>
 )
-target_link_libraries(base_package PUBLIC ik_controller_parameters) # custom to generate_parameter_library
+target_link_libraries(base_package PUBLIC
+  ik_controller_parameters                # custom to generate_parameter_library
+  drake::drake
+)
 ament_target_dependencies(
   base_package PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
@@ -100,3 +109,19 @@ ament_package()
 # INFO: Elapsed time: 17295.341s, Critical Path: 156.09s
 # INFO: 8175 processes: 4062 internal, 4113 processwrapper-sandbox.
 # INFO: Build completed successfully, 8175 total actions
+
+
+# By not providing "Finddrake.cmake" in CMAKE_MODULE_PATH this project has
+# asked CMake to find a package configuration file provided by "drake", but
+# CMake did not find one.
+
+# Could not find a package configuration file provided by "drake" with any of
+# the following names:
+
+#   drakeConfig.cmake
+#   drake-config.cmake
+
+# Add the installation prefix of "drake" to CMAKE_PREFIX_PATH or set
+# "drake_DIR" to a directory containing one of the above files.  If "drake"
+# provides a separate development package or SDK, be sure it has been
+# installed.
