@@ -39,6 +39,7 @@ controller_interface::CallbackReturn IKController::on_init()
   try
   {
     declare_parameters();
+    
   }
   catch (const std::exception & e)
   {
@@ -46,7 +47,20 @@ controller_interface::CallbackReturn IKController::on_init()
     return controller_interface::CallbackReturn::ERROR;
   }
 
+  const std::string& urdf = get_robot_description();
+  if (!urdf.empty())
+  {
+    drake::DifferentialInverseKinematicsCalculator calculator_;
+    calculator_.init(urdf);
+  }
+  else
+  {
+    // empty URDF is used for some tests
+    RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
+  }
+
   return controller_interface::CallbackReturn::SUCCESS;
+
 }
 
 controller_interface::CallbackReturn IKController::on_configure(

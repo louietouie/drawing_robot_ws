@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(base_package LANGUAGES CXX)
 
+message(WARNING "configuring project...")
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra)
 endif()
@@ -9,7 +11,7 @@ endif()
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # set(drake_DIR /home/louis/drake/tools/install/libdrake)
-set(drake_DIR /home/louis/drake/bazel-bin/tools/install/libdrake)
+# set(drake_DIR /home/louis/drake/bazel-bin/tools/install/libdrake)
 # set(drake_DIR /home/louis/drake/bazel-drake/tools/install/libdrake)
 # list(APPEND CMAKE_PREFIX_PATH /home/louis/drake/bazel-bin/tools/install/libdrake)
 
@@ -125,3 +127,7 @@ ament_package()
 # "drake_DIR" to a directory containing one of the above files.  If "drake"
 # provides a separate development package or SDK, be sure it has been
 # installed.
+
+
+message(WARNING "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+message(WARNING "CMAKE_FIND_PACKAGE_REDIRECTS_DIR: ${CMAKE_FIND_PACKAGE_REDIRECTS_DIR}")
