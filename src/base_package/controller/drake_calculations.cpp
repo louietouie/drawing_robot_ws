@@ -24,7 +24,7 @@ namespace drake {
         // auto _modelRobot = _plant.GetModelInstanceByName("the_robot_name");
 
         // CREATE BODY AND WORLD FRAMES
-        const auto& _bodyFrame = _plant.getBodyByName("base_link");
+        const auto& _bodyFrame = _plant.getBodyByName("base_link").body_frame();
         // self._G = plant.GetBodyByName("body").body_frame();
         _plant->AddJoint<multibody::WeldJoint>("weld_base", _plant->world_body(), nullopt,
             _bodyFrame, nullopt,

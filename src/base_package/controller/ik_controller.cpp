@@ -22,6 +22,7 @@
 
 #include "controller_interface/helpers.hpp"
 #include "hardware_interface/loaned_command_interface.hpp"
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/logging.hpp"
 #include "rclcpp/qos.hpp"
 
@@ -80,21 +81,22 @@ controller_interface::CallbackReturn IKController::on_configure(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::InterfaceConfiguration
-IKController::command_interface_configuration() const
+controller_interface::InterfaceConfiguration IKController::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration command_interfaces_config;
   command_interfaces_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  command_interfaces_config.names = command_interface_types_;
+  command_interfaces_config.names = command_interface_types_; // Louis: command_interface_types_ is populated during read_parameters(), which is called in the lifecycle method on_configure()
 
   return command_interfaces_config;
 }
 
-controller_interface::InterfaceConfiguration IKController::state_interface_configuration()
-  const
+controller_interface::InterfaceConfiguration IKController::state_interface_configuration() const
 {
-  return controller_interface::InterfaceConfiguration{
-    controller_interface::interface_configuration_type::NONE};
+  controller_interface::InterfaceConfiguration state_interfaces_config;
+  state_interfaces_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  state_interfaces_config.names = state_interface_types_; // Louis: command_interface_types_ is populated during read_parameters(), which is called in the lifecycle method on_configure()
+
+  return state_interfaces_config;
 }
 
 controller_interface::CallbackReturn IKController::on_activate(
@@ -135,6 +137,13 @@ controller_interface::return_type IKController::update(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   auto joint_commands = rt_command_ptr_.readFromRT();
+
+  const double shoulder_joint_position = state_interfaces_[0].get_value();
+  const double elbow_joint_position = state_interfaces_[1].get_value;
+
+  Eigen::VectorX currentpos(shoulder_joint_position, elbow_joint_position);
+  Eigen::VectorX goalpos((*joint_commands)->data[0], (*joint_commands)->data[1]);
+  const targetPositions = calculator_.calculateOneStep(goalpos, currentpos);
 
   // no command received yet
   if (!joint_commands || !(*joint_commands))
@@ -187,7 +196,9 @@ controller_interface::CallbackReturn IKController::read_parameters()
 
   for (const auto & joint : params_.joints)
   {
-    command_interface_types_.push_back(joint + "/" + params_.interface_name);
+    // command_interface_types_.push_back(joint + "/" + params_.interface_name); // This comes from the YAML parameter. Does it auto switch the word 'position' to HW_IF_POSITION?
+    command_interface_types_.push_back(joint + "/" + hardware_interface::HW_IF_POSITION);
+    state_interface_types_.push_back(joint + "/" + hardware_interface::HW_IF_POSITION);
   }
 
   return controller_interface::CallbackReturn::SUCCESS;

@@ -90,6 +90,7 @@ protected:
   std::string interface_name_;
 
   std::vector<std::string> command_interface_types_;
+  std::vector<std::string> state_interface_types_;
 
   realtime_tools::RealtimeBuffer<std::shared_ptr<CmdType>> rt_command_ptr_;
   rclcpp::Subscription<CmdType>::SharedPtr joints_command_subscriber_;
