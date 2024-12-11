@@ -33,15 +33,12 @@ IKController::IKController()
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr)
 {
-  printf("DOG");
-  fprintf(stderr, "DOG ERROR");
 }
 
 controller_interface::CallbackReturn IKController::on_init()
 {
   
-  fprintf(stdout, "Initialization started");
-  RCLCPP_INFO(get_node()->get_logger(), "DOG RCLCPP");
+  RCLCPP_INFO(get_node()->get_logger(), "Initialization Started");
 
   try
   {
@@ -49,11 +46,14 @@ controller_interface::CallbackReturn IKController::on_init()
 
     const std::string& urdf = get_robot_description();
     // drake::DifferentialInverseKinematicsCalculator calculator_;
+    // calculator_.init(urdf);
     
   }
   catch (const std::exception & e)
   {
     fprintf(stderr, "Exception thrown during init stage with message: %s \n", e.what());
+    RCLCPP_INFO(get_node()->get_logger(), "Custom Error");
+    RCLCPP_INFO(get_node()->get_logger(), e.what());
     return controller_interface::CallbackReturn::ERROR;
   }
 
