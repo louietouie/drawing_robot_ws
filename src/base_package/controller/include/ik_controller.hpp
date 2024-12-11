@@ -98,7 +98,7 @@ protected:
   std::shared_ptr<ParamListener> param_listener_;
   Params params_;
 
-  drake::DifferentialInverseKinematicsCalculator calculator_;
+  // drake::DifferentialInverseKinematicsCalculator calculator_;
 
 };
 

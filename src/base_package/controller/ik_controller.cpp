@@ -33,13 +33,22 @@ IKController::IKController()
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr)
 {
+  printf("DOG");
+  fprintf(stderr, "DOG ERROR");
 }
 
 controller_interface::CallbackReturn IKController::on_init()
 {
+  
+  fprintf(stdout, "Initialization started");
+  RCLCPP_INFO(get_node()->get_logger(), "DOG RCLCPP");
+
   try
   {
     declare_parameters();
+
+    const std::string& urdf = get_robot_description();
+    // drake::DifferentialInverseKinematicsCalculator calculator_;
     
   }
   catch (const std::exception & e)
@@ -48,17 +57,18 @@ controller_interface::CallbackReturn IKController::on_init()
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  const std::string& urdf = get_robot_description();
-  if (!urdf.empty())
-  {
-    drake::DifferentialInverseKinematicsCalculator calculator_;
-    calculator_.init(urdf);
-  }
-  else
-  {
-    // empty URDF is used for some tests
-    RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
-  }
+  
+  //   calculator_.init(urdf);
+  // if (!urdf.empty())
+  // {
+  //   drake::DifferentialInverseKinematicsCalculator calculator_;
+  //   calculator_.init(urdf);
+  // }
+  // else
+  // {
+  //   // empty URDF is used for some tests
+  //   RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
+  // }
 
   return controller_interface::CallbackReturn::SUCCESS;
 
