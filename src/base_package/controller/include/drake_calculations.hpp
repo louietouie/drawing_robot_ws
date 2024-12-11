@@ -22,7 +22,7 @@ class DifferentialInverseKinematicsCalculator {
 
         Eigen::VectorXd calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose); // returns vector of goal joint velocities (or integrated into positions?).
 
-        Eigen::MatrixXd calculate2DPseudoInverseJacobian(Eigen::VectorXd currentPose); // based on current robot pose
+        Eigen::MatrixXd calculate2DPseudoInverseJacobian(); // based on current robot pose
 
     private:
         MultibodyPlant<double> _plant;

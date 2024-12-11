@@ -36,12 +36,15 @@ namespace drake {
 
     Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateOneStep(VectorX<double> goalPosition, Eigen::VectorXd currentPose) {
 
-        const Eigen::SparseMatrix<double> p_inv = calculate2DPseudoInverseJacobian(currentPose);
+        _plant->SetPositions(&_plantContext, currentPose);
+
+        Eigen::SparseMatrix<double> p_inv = calculate2DPseudoInverseJacobian();
+        Eigen::VectorXd currentEndEffectorPosition = calculateCartesianCoordinates('end_effector');
         // const currentEndEffectorPosition = forward_kinematics(currentPose)
-        // const desiredEndEffectorVelocities = goalPosition - currentEndEffectorPosition
-        // const targetJointVelocities = p_inv.dot(desiredEndEffectorVelocities);
+        Eigen::VectorXd desiredEndEffectorVelocities = goalPosition - currentEndEffectorPosition
+        Eigen::VectorXd targetJointVelocities = p_inv.dot(desiredEndEffectorVelocities);
         // const targetPositions = integrate(targetJointVelocities)
-        Eigen::VectorXd targetPositions;
+        Eigen::VectorXd targetPositions = currentPose + targetJointVelocities;
         return(targetPositions)
 
         // Notes
@@ -53,9 +56,9 @@ namespace drake {
     }
 
 
-    Eigen::MatrixXd DifferentialInverseKinematicsCalculator::calculate2DPseudoInverseJacobian(Eigen::VectorXd currentPose) {
+    Eigen::MatrixXd DifferentialInverseKinematicsCalculator::calculate2DPseudoInverseJacobian() {
 
-        _plant->SetPositions(&_plantContext, currentPose);
+        // _plant->SetPositions(&_plantContext, currentPose);
         // python
         // self._plant.SetPositions(self._plant_context, self._iiwa, q);
 
@@ -74,6 +77,15 @@ namespace drake {
         Eigen::MatrixXd pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse(); // Eigen Library Alternative
 
         return p_inv;
+
+    }
+
+    Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateCartesianCoordinates(std::string joint_name) {
+
+        RigidBody body = _plant.getBodyByName(joint_name);
+        math::RigidTransform pose = _plant.EvalBodyPoseInWorld(_plantContext, body);
+        Vector3<double> translation_only = pose.translation();
+        return translation_only;
 
     }
     

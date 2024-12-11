@@ -138,12 +138,18 @@ controller_interface::return_type IKController::update(
 {
   auto joint_commands = rt_command_ptr_.readFromRT();
 
-  const double shoulder_joint_position = state_interfaces_[0].get_value();
-  const double elbow_joint_position = state_interfaces_[1].get_value;
+  // const double shoulder_joint_position = state_interfaces_[0].get_value();
+  // const double elbow_joint_position = state_interfaces_[1].get_value();
 
-  Eigen::VectorX currentpos(shoulder_joint_position, elbow_joint_position);
-  Eigen::VectorX goalpos((*joint_commands)->data[0], (*joint_commands)->data[1]);
-  const targetPositions = calculator_.calculateOneStep(goalpos, currentpos);
+  // Eigen::Vector2d currentpos;
+  // currentpos << shoulder_joint_position, elbow_joint_position;
+
+  // Eigen::Vector2d goalpos;
+  // goalpos << (*joint_commands)->data[0], (*joint_commands)->data[1];
+
+  // // Eigen::VectorXd currentpos(shoulder_joint_position, elbow_joint_position);
+  // // Eigen::VectorXd goalpos((*joint_commands)->data[0], (*joint_commands)->data[1]);
+  // Eigen::VectorXd targetPositions = calculator_.calculateOneStep(goalpos, currentpos);
 
   // no command received yet
   if (!joint_commands || !(*joint_commands))
