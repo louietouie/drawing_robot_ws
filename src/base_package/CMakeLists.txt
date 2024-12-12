@@ -54,6 +54,7 @@ add_library(
   SHARED
   hardware/rrbot.cpp hardware/can_comms.cpp
   controller/ik_controller.cpp
+  controller/drake_calculations.cpp
 )
 target_compile_features(base_package PUBLIC cxx_std_17)
 target_include_directories(base_package PUBLIC

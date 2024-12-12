@@ -19,21 +19,24 @@ class DifferentialInverseKinematicsCalculator {
     public:
         DifferentialInverseKinematicsCalculator();
 
-    //     void init(std::string urdf);
+        void initdd(std::string urdf);
 
-    //     Eigen::VectorXd calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose); // returns vector of goal joint velocities (or integrated into positions?).
+        Eigen::VectorXd calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose); // returns vector of goal joint velocities (or integrated into positions?).
 
-    //     Eigen::MatrixXd calculate2DPseudoInverseJacobian(); // based on current robot pose
+        Eigen::MatrixXd calculate2DPseudoInverseJacobian(); // based on current robot pose
 
-    // private:
-    //     MultibodyPlant<double> _plant;
-    //     std::unique_ptr<Context<double>> _plantContext;
-    //     // auto _modelRobot;
-    //     RigidBodyFrame<double> _bodyFrame;
-    //     RigidBodyFrame<double> _worldFrame;
+        Eigen::VectorXd calculateCartesianCoordinates(std::string joint_name);
+
+    private:
+        MultibodyPlant<double> _plant;
+        std::unique_ptr<Context<double>> _plantContext;
+        // Context<double> _plantContext;
+        // // auto _modelRobot;
+        RigidBodyFrame<double> _bodyFrame;
+        // RigidBodyFrame<double> _worldFrame;
         
-    //     // std::unique_ptr<Context<T> >
-    //     // const RigidBodyFrame< T > &
+        // std::unique_ptr<Context<T> >
+        // const RigidBodyFrame< T > &
 };
 
 }
