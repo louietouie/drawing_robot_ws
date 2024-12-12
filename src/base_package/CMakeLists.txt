@@ -38,6 +38,7 @@ endif()
 find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(drake REQUIRED)
+# find_package(drake CONFIG REQUIRED PATHS /opt/drake)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
@@ -58,9 +59,16 @@ add_library(
 )
 target_compile_features(base_package PUBLIC cxx_std_17)
 target_include_directories(base_package PUBLIC
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
-$<INSTALL_INTERFACE:include/base_package>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/controllers/include>
+  $<INSTALL_INTERFACE:include/base_package>
 )
+# add_executable(drake_calculations controller/drake_calculations.cpp)
+# target_link_libraries(drake_calculations)
+# add_executable(
+#   drake_calculations controller/drake_calculations.cpp
+# )
+
 target_link_libraries(base_package PUBLIC
   ik_controller_parameters                # custom to generate_parameter_library
   drake::drake
@@ -76,8 +84,13 @@ pluginlib_export_plugin_description_file(hardware_interface base_package.xml)
 pluginlib_export_plugin_description_file(controller_interface base_package.xml)
 
 # INSTALL
+
 install(
   DIRECTORY hardware/include/
+  DESTINATION include/base_package
+)
+install(
+  DIRECTORY controller/include/
   DESTINATION include/base_package
 )
 install(
@@ -131,4 +144,5 @@ ament_package()
 
 
 message(WARNING "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+message(WARNING "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message(WARNING "CMAKE_FIND_PACKAGE_REDIRECTS_DIR: ${CMAKE_FIND_PACKAGE_REDIRECTS_DIR}")

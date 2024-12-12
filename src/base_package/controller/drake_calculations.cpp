@@ -4,7 +4,7 @@ namespace base_package {
 // namespace drake {
 
     DifferentialInverseKinematicsCalculator::DifferentialInverseKinematicsCalculator()
-        :_plant (0.0)
+        :_plant (0.0),
          _bodyFrame (_plant.GetBodyByName("base_link").body_frame()),
          _worldFrame (_plant.world_frame())
     {

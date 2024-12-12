@@ -36,8 +36,8 @@ class DifferentialInverseKinematicsCalculator {
         const RigidBodyFrame<double>& _bodyFrame; // drake doesn't want copies of these frames made (DRAKE_NO_COPY_NO_MOVE_NO_ASSIGN(RigidBodyFrame) error), so added & to make them references to the frames
         const RigidBodyFrame<double>& _worldFrame;
         
-        std::unique_ptr<Context<T> >
-        const RigidBodyFrame< T > &
+        // std::unique_ptr<Context<T> >
+        // const RigidBodyFrame< T > &
 };
 
 }
