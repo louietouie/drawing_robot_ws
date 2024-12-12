@@ -5,8 +5,12 @@ namespace base_package {
 
     DifferentialInverseKinematicsCalculator::DifferentialInverseKinematicsCalculator()
         :_plant (0.0),
-         _bodyFrame (_plant.GetBodyByName("base_link").body_frame())
-    {}
+         _bodyFrame (_plant.GetBodyByName("base_link").body_frame()),
+         _worldFrame (_plant.world_frame())
+        //  _plantContextPointer (_plant.CreateDefaultContext())
+    {
+        auto _plantContextPointer = _plant.CreateDefaultContext(); // This was causing warnings when placed in the initializer list
+    }
 
     // void DifferentialInverseKinematicsCalculator::initdd(std::string urdf) {
 
@@ -22,7 +26,7 @@ namespace base_package {
     //     _plant.Finalize();
 
     //     // CREATE MULTIBODY PLANT CONTEXT
-    //     auto _plantContext = _plant.CreateDefaultContext();
+        
 
     //     // Might not be neccessary, is _plant itself already the robot?
     //     // auto _modelRobot = _plant.GetModelInstanceByName("the_robot_name");
