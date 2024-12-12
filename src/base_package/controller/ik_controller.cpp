@@ -31,8 +31,8 @@ namespace base_package
 IKController::IKController()
 : controller_interface::ControllerInterface(),
   rt_command_ptr_(nullptr),
-  joints_command_subscriber_(nullptr)
-  // calculator_()
+  joints_command_subscriber_(nullptr),
+  calculator_()
 {
 }
 
@@ -45,7 +45,7 @@ controller_interface::CallbackReturn IKController::on_init()
   {
     declare_parameters();
     const std::string& urdf = get_robot_description();
-    // calculator_.load_model(urdf);    
+    calculator_.load_model(urdf);    
   }
   catch (const std::exception & e)
   {

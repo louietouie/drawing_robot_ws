@@ -33,8 +33,10 @@ class DifferentialInverseKinematicsCalculator {
         std::unique_ptr<Context<double>> _plantContextPointer; // initialization can be delayed since it is a pointer, but I might as well do it in the initializer list
         // const Context<double>& _plantContext;
         // // auto _modelRobot;
-        const RigidBodyFrame<double>& _bodyFrame; // drake doesn't want copies of these frames made (DRAKE_NO_COPY_NO_MOVE_NO_ASSIGN(RigidBodyFrame) error), so added & to make them references to the frames
-        const RigidBodyFrame<double>& _worldFrame;
+        // std::unique_ptr<Context<double>> _bodyFramePtr;
+        // std::unique_ptr<Context<double>> _worldFramePtr;
+        // const RigidBodyFrame<double>& _bodyFrame; // drake doesn't want copies of these frames made (DRAKE_NO_COPY_NO_MOVE_NO_ASSIGN(RigidBodyFrame) error), so added & to make them references to the frames
+        // const RigidBodyFrame<double>& _worldFrame;
         
         // std::unique_ptr<Context<T> >
         // const RigidBodyFrame< T > &

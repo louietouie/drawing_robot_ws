@@ -4,12 +4,12 @@ namespace base_package {
 // namespace drake {
 
     DifferentialInverseKinematicsCalculator::DifferentialInverseKinematicsCalculator()
-        :_plant (0.0),
-         _bodyFrame (_plant.GetBodyByName("base_link").body_frame()),
-         _worldFrame (_plant.world_frame())
+        :_plant (0.0)
+        //  _bodyFrame (_plant.GetBodyByName("odrive_base").body_frame()),
+        //  _worldFrame (_plant.world_frame())
     {
         // is it ok for this to be created before the urdf is loaded? Probably, since its a pointer and not a copy
-        auto _plantContextPointer = _plant.CreateDefaultContext(); // This was causing warnings when placed in the initializer list
+        // auto _plantContextPointer = _plant.CreateDefaultContext(); // This was causing warnings when placed in the initializer list
     }
 
     void DifferentialInverseKinematicsCalculator::load_model(std::string urdf) {
@@ -17,6 +17,9 @@ namespace base_package {
         Parser parser(&_plant);
         parser.AddModelsFromString(urdf, ".urdf");
         _plant.Finalize();
+
+        // _bodyFramePtr = std::make_unique(_plant.GetBodyByName("odrive_base").body_frame()),
+        // _worldFramePtr = std::make_unique(_plant.world_frame())
 
         // I should add some form of error checking 
         // const std::string & urdf = get_robot_description();
@@ -65,7 +68,6 @@ namespace base_package {
         // https://github.com/RobotLocomotion/drake/blob/0944b39967937ac56f497b0a85a88b7f22e5a6ce/examples/planar_gripper/gripper_brick_planning_constraint_helper.cc#L119
 
         // Eigen::Matrix3Xd jacobian(3, _plant.plant().num_positions());
-        // Eigen::Matrix3Xd jacobian(3, _plant.num_positions());
         Eigen::Matrix3Xd jacobian(3, _plant.num_positions());
         // jacobian << 3, _plant.num_positions();
 
@@ -73,8 +75,11 @@ namespace base_package {
         Eigen::Vector3d p_BoBp_B;
         p_BoBp_B << 0,0,0;
 
-        _plant.CalcJacobianSpatialVelocity(
-            *_plantContextPointer, drake::multibody::JacobianWrtVariable::kQDot, _bodyFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
+        const RigidBodyFrame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
+        const RigidBodyFrame<double>& _worldFrame = _plant.world_frame();
+
+        _plant.CalcJacobianTranslationalVelocity(
+            *_plantContextPointer, drake::multibody::JacobianWrtVariable::kQDot, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
 
         // const Eigen::SparseMatrix<double> p_inv = _plant.MakeActuationMatrixPseudoinverse();
         Eigen::MatrixXd pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse(); // Eigen Library Alternative
@@ -88,6 +93,7 @@ namespace base_package {
         const drake::multibody::RigidBody<double>& body = _plant.GetBodyByName(joint_name);
         drake::math::RigidTransform pose = _plant.EvalBodyPoseInWorld(*_plantContextPointer, body);
         Eigen::VectorXd translation_only = pose.translation();
+
         return translation_only;
 
     }
