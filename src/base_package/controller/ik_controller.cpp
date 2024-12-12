@@ -32,6 +32,7 @@ IKController::IKController()
 : controller_interface::ControllerInterface(),
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr)
+  // calculator_()
 {
 }
 
@@ -43,11 +44,8 @@ controller_interface::CallbackReturn IKController::on_init()
   try
   {
     declare_parameters();
-
     const std::string& urdf = get_robot_description();
-    // drake::DifferentialInverseKinematicsCalculator calculator_;
-    // calculator_.init(urdf);
-    
+    // calculator_.load_model(urdf);    
   }
   catch (const std::exception & e)
   {
