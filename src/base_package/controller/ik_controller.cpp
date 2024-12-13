@@ -34,12 +34,6 @@ IKController::IKController()
   joints_command_subscriber_(nullptr),
   calculator_()
 {
-  // MultibodyPlant<double> _plant(0.0);
-  // MultibodyPlant<double> acrobot(0.0);
-  // Parser parser(&acrobot);
-  // MultibodyPlant<double> acrobot(0.0)
-  // acrobot.Finalize();
-  // acrobot.CreateDefaultContext();
 }
 
 controller_interface::CallbackReturn IKController::on_init()
@@ -52,6 +46,9 @@ controller_interface::CallbackReturn IKController::on_init()
     declare_parameters();
     const std::string& urdf = get_robot_description();
     calculator_.load_model(urdf);    
+    RCLCPP_INFO(get_node()->get_logger(), urdf.c_str());
+    RCLCPP_INFO(get_node()->get_logger(), "SEPERATE");
+    RCLCPP_INFO(get_node()->get_logger(), std::to_string(calculator_.getp()).c_str());
   }
   catch (const std::exception & e)
   {
@@ -61,7 +58,6 @@ controller_interface::CallbackReturn IKController::on_init()
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  
   //   calculator_.init(urdf);
   // if (!urdf.empty())
   // {
@@ -73,7 +69,7 @@ controller_interface::CallbackReturn IKController::on_init()
   //   // empty URDF is used for some tests
   //   RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
   // }
-
+  RCLCPP_INFO(get_node()->get_logger(), "Initialization Succeeded");
   return controller_interface::CallbackReturn::SUCCESS;
 
 }
@@ -180,9 +176,16 @@ controller_interface::return_type IKController::update(
     return controller_interface::return_type::ERROR;
   }
 
+  Eigen::Vector2d goalposition;
+  goalposition << (*joint_commands)->data[0], (*joint_commands)->data[1];
+  Eigen::Vector2d currentpose;
+  currentpose << state_interfaces_[0].get_value(), state_interfaces_[1].get_value();
+  Eigen::VectorXd commandedjointpositions = calculator_.calculateOneStep(goalposition, currentpose);
+
   for (auto index = 0ul; index < command_interfaces_.size(); ++index)
   {
     command_interfaces_[index].set_value((*joint_commands)->data[index]);
+    // command_interfaces_[index].set_value(commandedjointpositions(index));
   }
 
   return controller_interface::return_type::OK;
