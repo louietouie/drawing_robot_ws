@@ -46,9 +46,9 @@ controller_interface::CallbackReturn IKController::on_init()
     declare_parameters();
     const std::string& urdf = get_robot_description();
     calculator_.load_model(urdf);    
-    RCLCPP_INFO(get_node()->get_logger(), urdf.c_str());
-    RCLCPP_INFO(get_node()->get_logger(), "SEPERATE");
-    RCLCPP_INFO(get_node()->get_logger(), std::to_string(calculator_.getp()).c_str());
+    // RCLCPP_INFO(get_node()->get_logger(), urdf.c_str());
+    // RCLCPP_INFO(get_node()->get_logger(), "SEPERATE");
+    // RCLCPP_INFO(get_node()->get_logger(), std::to_string(calculator_.getp()).c_str());
   }
   catch (const std::exception & e)
   {

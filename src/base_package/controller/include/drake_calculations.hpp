@@ -3,6 +3,8 @@
 
 #include "drake/multibody/parsing/parser.h"
 #include "drake/multibody/plant/multibody_plant_config_functions.h"
+#include "drake/multibody/tree/weld_joint.h"
+#include "drake/math/rigid_transform.h"
 // #include "drake/multibody/plant/multibody_plant.h"
 
 namespace base_package{
@@ -13,6 +15,7 @@ using drake::multibody::Parser;
 using drake::multibody::RigidBodyFrame;
 // using multibody::Context;
 using drake::systems::Context;
+using drake::math::RigidTransformd;
 
 class DifferentialInverseKinematicsCalculator {
 
@@ -28,6 +31,7 @@ class DifferentialInverseKinematicsCalculator {
         Eigen::VectorXd calculateCartesianCoordinates(std::string joint_name);
 
         int getp();
+        std::vector<std::string> getpn();
 
     private:
 

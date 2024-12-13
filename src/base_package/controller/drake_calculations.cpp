@@ -11,6 +11,15 @@ namespace base_package {
 
         Parser parser(&_plant);
         parser.AddModelsFromString(urdf, ".urdf");
+
+        // without this new joint, _plant.num_positions is 9. With it, just 2.
+        // sledgehammer_base_link_qw, sledgehammer_base_link_qx, sledgehammer_base_link_qy, sledgehammer_base_link_qz, sledgehammer_base_link_x, sledgehammer_base_link_y, sledgehammer_base_link_z, sledgehammer_shoulder_q, sledgehammer_elbow_q
+        // valid names in model instance 'sledgehammer' are: base_link, end_effector, forearm, odrive_base, upperarm
+        const auto& basebody = _plant.GetBodyByName("base_link");
+        _plant.AddJoint<drake::multibody::WeldJoint>("weld_base", _plant.world_body(), std::nullopt,
+            basebody, std::nullopt,
+            RigidTransformd::Identity());
+
         _plant.Finalize();
         auto _plantContextPointer = _plant.CreateDefaultContext(); // this must come after plant Finalize
 
@@ -22,12 +31,6 @@ namespace base_package {
 
         // Might not be neccessary, is _plant itself already the robot?
         // auto _modelRobot = _plant.GetModelInstanceByName("the_robot_name");
-
-        // is this body to world joint neccessary?
-        // const auto& body = _plant.GetBodyByName("base_link");
-        // _plant.AddJoint<drake::multibody::WeldJoint>("weld_base", _plant.world_body(), std::nullopt,
-        //     body, std::nullopt,
-        //     drake::Isometry3<double>::Identity());
 
     }
 
@@ -59,7 +62,7 @@ namespace base_package {
 
         // https://github.com/RobotLocomotion/drake/blob/0944b39967937ac56f497b0a85a88b7f22e5a6ce/examples/planar_gripper/gripper_brick_planning_constraint_helper.cc#L119
 
-        Eigen::Matrix3Xd jacobian(3, _plant.num_positions());
+        Eigen::Matrix3Xd jacobian(6, _plant.num_positions());
         // Eigen::MatrixXd jacobian;
 
         Eigen::Vector3d p_BoBp_B;
@@ -68,7 +71,7 @@ namespace base_package {
         const RigidBodyFrame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
         const RigidBodyFrame<double>& _worldFrame = _plant.world_frame();
 
-        _plant.CalcJacobianTranslationalVelocity(
+        _plant.CalcJacobianSpatialVelocity(
             *_plantContextPointer, drake::multibody::JacobianWrtVariable::kQDot, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
 
         // // const Eigen::SparseMatrix<double> p_inv = _plant.MakeActuationMatrixPseudoinverse();
@@ -81,6 +84,10 @@ namespace base_package {
 
     int DifferentialInverseKinematicsCalculator::getp() {
         return _plant.num_positions();
+    }
+
+    std::vector<std::string> DifferentialInverseKinematicsCalculator::getpn() {
+        return _plant.GetPositionNames();
     }
 
     Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateCartesianCoordinates(std::string joint_name) {
