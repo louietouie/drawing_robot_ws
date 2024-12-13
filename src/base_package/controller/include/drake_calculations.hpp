@@ -3,6 +3,17 @@
 
 #include "drake/multibody/parsing/parser.h"
 #include "drake/multibody/plant/multibody_plant_config_functions.h"
+// #include "drake/multibody/plant/multibody_plant.h"
+// #include "drake/common/drake_assert.h"
+// #include "drake/geometry/scene_graph.h"
+// #include "drake/multibody/benchmarks/acrobot/make_acrobot_plant.h"
+// #include "drake/multibody/parsing/parser.h"
+// #include "drake/multibody/tree/revolute_joint.h"
+// #include "drake/systems/analysis/simulator.h"
+// #include "drake/systems/controllers/linear_quadratic_regulator.h"
+// #include "drake/systems/framework/diagram_builder.h"
+// #include "drake/systems/primitives/affine_system.h"
+// #include "drake/visualization/visualization_config_functions.h"
 
 namespace base_package{
 // namespace drake {
@@ -13,6 +24,18 @@ using drake::multibody::Parser;
 using drake::multibody::RigidBodyFrame;
 // using multibody::Context;
 using drake::systems::Context;
+
+// using drake::geometry::SceneGraph;
+// using drake::multibody::benchmarks::acrobot::AcrobotParameters;
+// using drake::multibody::benchmarks::acrobot::MakeAcrobotPlant;
+// using drake::multibody::AddMultibodyPlantSceneGraph;
+// using drake::multibody::MultibodyPlant;
+// using drake::multibody::Parser;
+// using drake::multibody::JointActuator;
+// using drake::multibody::RevoluteJoint;
+// using drake::systems::Context;
+// using drake::systems::InputPort;
+// using Eigen::Vector2d;
 
 class DifferentialInverseKinematicsCalculator {
 

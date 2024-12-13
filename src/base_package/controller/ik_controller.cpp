@@ -34,6 +34,12 @@ IKController::IKController()
   joints_command_subscriber_(nullptr),
   calculator_()
 {
+  // MultibodyPlant<double> _plant(0.0);
+  // MultibodyPlant<double> acrobot(0.0);
+  // Parser parser(&acrobot);
+  // MultibodyPlant<double> acrobot(0.0)
+  // acrobot.Finalize();
+  // acrobot.CreateDefaultContext();
 }
 
 controller_interface::CallbackReturn IKController::on_init()
