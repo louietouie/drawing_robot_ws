@@ -16,9 +16,14 @@ namespace base_package {
         // sledgehammer_base_link_qw, sledgehammer_base_link_qx, sledgehammer_base_link_qy, sledgehammer_base_link_qz, sledgehammer_base_link_x, sledgehammer_base_link_y, sledgehammer_base_link_z, sledgehammer_shoulder_q, sledgehammer_elbow_q
         // valid names in model instance 'sledgehammer' are: base_link, end_effector, forearm, odrive_base, upperarm
         const auto& basebody = _plant.GetBodyByName("base_link");
-        _plant.AddJoint<drake::multibody::WeldJoint>("weld_base", _plant.world_body(), std::nullopt,
-            basebody, std::nullopt,
-            RigidTransformd::Identity());
+        // _plant.AddJoint<drake::multibody::WeldJoint>(
+        //     "weld_base",
+        //     _plant.world_body(),
+        //     std::nullopt,
+        //     basebody,
+        //     std::nullopt,
+        //     RigidTransformd::Identity());
+        _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
 
         _plant.Finalize();
         auto _plantContextPointer = _plant.CreateDefaultContext(); // this must come after plant Finalize
@@ -34,10 +39,9 @@ namespace base_package {
 
     }
 
-    Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose) {
-
+    Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateOneStep() {
+// Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose
         // _plant.SetPositions(_plantContextPointer.get(), currentPose); // this seems wierd. never seen unique_ptr.get()
-        
         Eigen::MatrixXd p_inv = calculate2DPseudoInverseJacobian();
         // Eigen::VectorXd currentEndEffectorPosition = calculateCartesianCoordinates("end_effector");
         // // const currentEndEffectorPosition = forward_kinematics(currentPose)
@@ -62,17 +66,21 @@ namespace base_package {
 
         // https://github.com/RobotLocomotion/drake/blob/0944b39967937ac56f497b0a85a88b7f22e5a6ce/examples/planar_gripper/gripper_brick_planning_constraint_helper.cc#L119
 
-        Eigen::Matrix3Xd jacobian(6, _plant.num_positions());
-        // Eigen::MatrixXd jacobian;
+        Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
 
         Eigen::Vector3d p_BoBp_B;
-        p_BoBp_B << 0,0,0;
+        p_BoBp_B << 0.0,0.0,0.0;
+        // const Eigen::Vector3d xy = p_BoBp_B;
+        // const Eigen::Vector3d p_BoBp_B(0.0,0.0,0.0);
 
-        const RigidBodyFrame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
-        const RigidBodyFrame<double>& _worldFrame = _plant.world_frame();
+        const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
+        // const RigidBodyFrame<double>& _endFrame = _plant.GetFrameByName("end_effector");
+        const Frame<double>& _worldFrame = _plant.world_frame();
 
-        _plant.CalcJacobianSpatialVelocity(
-            *_plantContextPointer, drake::multibody::JacobianWrtVariable::kQDot, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
+        _plant.CalcJacobianTranslationalVelocity(
+            *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
+
+        // printf("cat");
 
         // // const Eigen::SparseMatrix<double> p_inv = _plant.MakeActuationMatrixPseudoinverse();
         // Eigen::MatrixXd pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse(); // Eigen Library Alternative

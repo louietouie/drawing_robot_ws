@@ -13,6 +13,7 @@ using drake::multibody::MultibodyPlant;
 using drake::multibody::Parser;
 // using multibody::RigidBody;
 using drake::multibody::RigidBodyFrame;
+using drake::multibody::Frame;
 // using multibody::Context;
 using drake::systems::Context;
 using drake::math::RigidTransformd;
@@ -24,7 +25,8 @@ class DifferentialInverseKinematicsCalculator {
 
         void load_model(std::string urdf);
 
-        Eigen::VectorXd calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose); // returns vector of goal joint velocities (or integrated into positions?).
+        // Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose
+        Eigen::VectorXd calculateOneStep(); // returns vector of goal joint velocities (or integrated into positions?).
 
         Eigen::MatrixXd calculate2DPseudoInverseJacobian(); // based on current robot pose
 
