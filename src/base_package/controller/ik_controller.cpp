@@ -1,19 +1,3 @@
-// LOUIS: ROS2 Forward Command Controller
-
-// Copyright 2021 Stogl Robotics Consulting UG (haftungsbescrhänkt)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include "include/ik_controller.hpp"
 
 #include <memory>
@@ -33,7 +17,6 @@ IKController::IKController()
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr),
   _plant (0.0)
-  // calculator_()
 {
 }
 
@@ -58,39 +41,17 @@ controller_interface::CallbackReturn IKController::on_init()
   const auto& basebody = _plant.GetBodyByName("base_link");
   _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
   _plant.Finalize();
-  auto _plantContextPointer = _plant.CreateDefaultContext();
-  auto _jacobian = std::make_unique<Eigen::Matrix3Xd>(3, _plant.num_positions());
+  _plantContextPointer = _plant.CreateDefaultContext();
+  _jacobian = std::make_unique<Eigen::Matrix3Xd>(3, _plant.num_positions());
     // Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
 
+  Eigen::Vector3d mypoint;
+  mypoint << 0.0,0.0,0.0;
+  const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
+  const Frame<double>& _worldFrame = _plant.world_frame();
+  _plant.CalcJacobianTranslationalVelocity(
+      *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, mypoint, _worldFrame, _worldFrame, _jacobian.get());
 
-
-  // MultibodyPlant<double> _plant(0.0);
-  // Parser parser(&_plant);
-  // parser.AddModelsFromString(urdf, ".urdf");
-  // const auto& basebody = _plant.GetBodyByName("base_link");
-  // _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
-  // _plant.Finalize();
-  // auto _plantContextPointer = _plant.CreateDefaultContext();
-  // Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
-  // Eigen::Vector3d p_BoBp_B;
-  // p_BoBp_B << 0.0,0.0,0.0;
-  // const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
-  // const Frame<double>& _worldFrame = _plant.world_frame();
-  // _plant.CalcJacobianTranslationalVelocity(
-  //     *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
-
-
-
-
-
-
-
-
-
-    // calculator_.load_model(urdf);    
-    // RCLCPP_INFO(get_node()->get_logger(), urdf.c_str());
-    // RCLCPP_INFO(get_node()->get_logger(), "SEPERATE");
-    // RCLCPP_INFO(get_node()->get_logger(), std::to_string(calculator_.getp()).c_str());
   }
   catch (const std::exception & e)
   {
@@ -100,25 +61,23 @@ controller_interface::CallbackReturn IKController::on_init()
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  //   calculator_.init(urdf);
-  // if (!urdf.empty())
-  // {
-  //   drake::DifferentialInverseKinematicsCalculator calculator_;
-  //   calculator_.init(urdf);
-  // }
-  // else
-  // {
-  //   // empty URDF is used for some tests
-  //   RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
-  // }
   RCLCPP_INFO(get_node()->get_logger(), "Initialization Succeeded");
   return controller_interface::CallbackReturn::SUCCESS;
 
 }
 
+
+
+
+
+
+
+
 controller_interface::CallbackReturn IKController::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(get_node()->get_logger(), "configure started");  
+
   auto ret = this->read_parameters();
   if (ret != controller_interface::CallbackReturn::SUCCESS)
   {
@@ -154,6 +113,8 @@ controller_interface::InterfaceConfiguration IKController::state_interface_confi
 controller_interface::CallbackReturn IKController::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(get_node()->get_logger(), "activate started");
+
   //  check if we have all resources defined in the "points" parameter
   //  also verify that we *only* have the resources defined in the "points" parameter
   // ATTENTION(destogl): Shouldn't we use ordered interface all the time?
@@ -180,28 +141,28 @@ controller_interface::CallbackReturn IKController::on_activate(
 controller_interface::CallbackReturn IKController::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(get_node()->get_logger(), "deactivate started");
+
   // reset command buffer
   rt_command_ptr_ = realtime_tools::RealtimeBuffer<std::shared_ptr<CmdType>>(nullptr);
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
+
+
+
+
+
+
+
+
+
 controller_interface::return_type IKController::update(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
+  // RCLCPP_INFO(get_node()->get_logger(), "update started");
+
   auto joint_commands = rt_command_ptr_.readFromRT();
-
-  // const double shoulder_joint_position = state_interfaces_[0].get_value();
-  // const double elbow_joint_position = state_interfaces_[1].get_value();
-
-  // Eigen::Vector2d currentpos;
-  // currentpos << shoulder_joint_position, elbow_joint_position;
-
-  // Eigen::Vector2d goalpos;
-  // goalpos << (*joint_commands)->data[0], (*joint_commands)->data[1];
-
-  // // Eigen::VectorXd currentpos(shoulder_joint_position, elbow_joint_position);
-  // // Eigen::VectorXd goalpos((*joint_commands)->data[0], (*joint_commands)->data[1]);
-  // Eigen::VectorXd targetPositions = calculator_.calculateOneStep(goalpos, currentpos);
 
   // no command received yet
   if (!joint_commands || !(*joint_commands))
@@ -217,39 +178,15 @@ controller_interface::return_type IKController::update(
       (*joint_commands)->data.size(), command_interfaces_.size());
     return controller_interface::return_type::ERROR;
   }
-
-  // Eigen::Vector2d goalposition;
-  // goalposition << (*joint_commands)->data[0], (*joint_commands)->data[1];
-  // Eigen::Vector2d currentpose;
-  // currentpose << state_interfaces_[0].get_value(), state_interfaces_[1].get_value();
-  // Eigen::VectorXd commandedjointpositions = calculator_.calculateOneStep(); // goalposition, currentpose
-
-
-
-
-
-
+  
+  // RCLCPP_INFO(get_node()->get_logger(), "update running");
   // Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
-  Eigen::Vector3d p_BoBp_B;
-  p_BoBp_B << 0.0,0.0,0.0;
+  Eigen::Vector3d mypoint;
+  mypoint << 0.0,0.0,0.0;
   const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
   const Frame<double>& _worldFrame = _plant.world_frame();
   _plant.CalcJacobianTranslationalVelocity(
-      *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, _jacobian.get());
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, mypoint, _worldFrame, _worldFrame, _jacobian.get());
 
   for (auto index = 0ul; index < command_interfaces_.size(); ++index)
   {
@@ -262,11 +199,15 @@ controller_interface::return_type IKController::update(
 
 void IKController::declare_parameters()
 {
+  RCLCPP_INFO(get_node()->get_logger(), "declare started");
+
   param_listener_ = std::make_shared<ParamListener>(get_node());
 }
 
 controller_interface::CallbackReturn IKController::read_parameters()
 {
+  RCLCPP_INFO(get_node()->get_logger(), "read parameters started");
+
   if (!param_listener_)
   {
     RCLCPP_ERROR(get_node()->get_logger(), "Error encountered during init");
@@ -302,3 +243,15 @@ controller_interface::CallbackReturn IKController::read_parameters()
 
 PLUGINLIB_EXPORT_CLASS(
   base_package::IKController, controller_interface::ControllerInterface)
+
+
+
+
+// #0  0x00007ffff6120618 in drake::multibody::MultibodyPlant<double>::CalcJacobianTranslationalVelocity(drake::systems::Context<double> const&, drake::multibody::JacobianWrtVariable, drake::multibody::Frame<double> const&, Eigen::Ref<Eigen::Matrix<double, 3, -1, 0, 3, -1> const, 0, Eigen::OuterStride<-1> > const&, drake::multibody::Frame<double> const&, drake::multibody::Frame<double> const&, drake::EigenPtr<Eigen::Matrix<double, -1, -1, 0, -1, -1> >) const ()
+
+
+/// watchpoint on _plantContextPointer in on_init
+// Watchpoint 2 deleted because the program has left the block in
+// which its expression is valid.
+// 0x00007ffff386f48b in controller_interface::ControllerInterfaceBase::init(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, rclcpp::NodeOptions const&) ()
+//    from target:/opt/ros/jazzy/lib/libcontroller_interface.so

@@ -34,7 +34,9 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         output="both",
-        parameters=[controller_config_yaml, params]
+        parameters=[controller_config_yaml, params],
+        prefix = ['gdbserver localhost:3000']
+        # prefix=['xterm -e gdb -ex run --args'] #Debugging
     )
 
     return LaunchDescription([node_controller_manager])

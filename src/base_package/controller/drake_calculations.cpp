@@ -11,31 +11,10 @@ namespace base_package {
 
         Parser parser(&_plant);
         parser.AddModelsFromString(urdf, ".urdf");
-
-        // without this new joint, _plant.num_positions is 9. With it, just 2.
-        // sledgehammer_base_link_qw, sledgehammer_base_link_qx, sledgehammer_base_link_qy, sledgehammer_base_link_qz, sledgehammer_base_link_x, sledgehammer_base_link_y, sledgehammer_base_link_z, sledgehammer_shoulder_q, sledgehammer_elbow_q
-        // valid names in model instance 'sledgehammer' are: base_link, end_effector, forearm, odrive_base, upperarm
         const auto& basebody = _plant.GetBodyByName("base_link");
-        // _plant.AddJoint<drake::multibody::WeldJoint>(
-        //     "weld_base",
-        //     _plant.world_body(),
-        //     std::nullopt,
-        //     basebody,
-        //     std::nullopt,
-        //     RigidTransformd::Identity());
         _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
-
         _plant.Finalize();
         auto _plantContextPointer = _plant.CreateDefaultContext(); // this must come after plant Finalize
-
-        // I should add some form of error checking 
-        // const std::string & urdf = get_robot_description();
-        // if (!urdf.empty()) {
-        //     parser.AddModelFromString(urdf);
-        // }
-
-        // Might not be neccessary, is _plant itself already the robot?
-        // auto _modelRobot = _plant.GetModelInstanceByName("the_robot_name");
 
     }
 
