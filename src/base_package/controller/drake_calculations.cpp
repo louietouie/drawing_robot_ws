@@ -16,17 +16,10 @@ namespace base_package {
         // sledgehammer_base_link_qw, sledgehammer_base_link_qx, sledgehammer_base_link_qy, sledgehammer_base_link_qz, sledgehammer_base_link_x, sledgehammer_base_link_y, sledgehammer_base_link_z, sledgehammer_shoulder_q, sledgehammer_elbow_q
         // valid names in model instance 'sledgehammer' are: base_link, end_effector, forearm, odrive_base, upperarm
         const auto& basebody = _plant.GetBodyByName("base_link");
-        // _plant.AddJoint<drake::multibody::WeldJoint>(
-        //     "weld_base",
-        //     _plant.world_body(),
-        //     std::nullopt,
-        //     basebody,
-        //     std::nullopt,
-        //     RigidTransformd::Identity());
         _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
-
         _plant.Finalize();
-        auto _plantContextPointer = _plant.CreateDefaultContext(); // this must come after plant Finalize
+
+        _plantContextPointer = _plant.CreateDefaultContext(); // this must come after plant Finalize
 
         // I should add some form of error checking 
         // const std::string & urdf = get_robot_description();
@@ -39,20 +32,16 @@ namespace base_package {
 
     }
 
-    Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateOneStep() {
-// Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose
-        // _plant.SetPositions(_plantContextPointer.get(), currentPose); // this seems wierd. never seen unique_ptr.get()
-        Eigen::MatrixXd p_inv = calculate2DPseudoInverseJacobian();
-        // Eigen::VectorXd currentEndEffectorPosition = calculateCartesianCoordinates("end_effector");
-        // // const currentEndEffectorPosition = forward_kinematics(currentPose)
-        // Eigen::VectorXd desiredEndEffectorVelocities = goalPosition - currentEndEffectorPosition;
-        // Eigen::VectorXd targetJointVelocities = p_inv * desiredEndEffectorVelocities;
-        // // const targetPositions = integrate(targetJointVelocities)
-        // Eigen::VectorXd targetPositions = currentPose + targetJointVelocities;
-        // return(targetPositions);
+    Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose) {
 
-        Eigen::VectorXd test;
-        return test;
+        _plant.SetPositions(_plantContextPointer.get(), currentPose); // this seems wierd. never seen unique_ptr.get()
+        Eigen::MatrixXd p_inv = calculate2DPseudoInverseJacobian();
+        Eigen::VectorXd currentEndEffectorPosition = calculateCartesianCoordinates("end_effector");
+        Eigen::VectorXd desiredEndEffectorVelocities = goalPosition - currentEndEffectorPosition;
+        Eigen::VectorXd targetJointVelocities = p_inv * desiredEndEffectorVelocities;
+        Eigen::VectorXd targetJointPositions = currentPose + (targetJointVelocities * 0.01); // dt?
+
+        return targetJointPositions;
 
         // Notes
         // VectorX vs Eigen::VectorXd?
@@ -68,34 +57,21 @@ namespace base_package {
 
         Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
 
-        Eigen::Vector3d p_BoBp_B;
+        Eigen::Vector3d p_BoBp_B; // const?
         p_BoBp_B << 0.0,0.0,0.0;
-        // const Eigen::Vector3d xy = p_BoBp_B;
-        // const Eigen::Vector3d p_BoBp_B(0.0,0.0,0.0);
 
         const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
-        // const RigidBodyFrame<double>& _endFrame = _plant.GetFrameByName("end_effector");
         const Frame<double>& _worldFrame = _plant.world_frame();
 
         _plant.CalcJacobianTranslationalVelocity(
             *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
 
-        // printf("cat");
 
-        // // const Eigen::SparseMatrix<double> p_inv = _plant.MakeActuationMatrixPseudoinverse();
-        // Eigen::MatrixXd pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse(); // Eigen Library Alternative
+        // const Eigen::SparseMatrix<double> p_inv = _plant.MakeActuationMatrixPseudoinverse();
+        Eigen::MatrixXd pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse(); // Eigen Library Alternative
 
-        Eigen::MatrixXd pinv;
         return pinv;
 
-    }
-
-    int DifferentialInverseKinematicsCalculator::getp() {
-        return _plant.num_positions();
-    }
-
-    std::vector<std::string> DifferentialInverseKinematicsCalculator::getpn() {
-        return _plant.GetPositionNames();
     }
 
     Eigen::VectorXd DifferentialInverseKinematicsCalculator::calculateCartesianCoordinates(std::string joint_name) {

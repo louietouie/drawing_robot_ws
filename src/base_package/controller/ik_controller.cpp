@@ -32,8 +32,7 @@ IKController::IKController()
 : controller_interface::ControllerInterface(),
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr),
-  _plant (0.0)
-  // calculator_()
+  calculator_()
 {
 }
 
@@ -46,51 +45,7 @@ controller_interface::CallbackReturn IKController::on_init()
   {
     declare_parameters();
     const std::string& urdf = get_robot_description();
-
-
-
-
-
-
-  // MultibodyPlant<double> _plant(0.0);
-  Parser parser(&_plant);
-  parser.AddModelsFromString(urdf, ".urdf");
-  const auto& basebody = _plant.GetBodyByName("base_link");
-  _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
-  _plant.Finalize();
-  auto _plantContextPointer = _plant.CreateDefaultContext();
-  auto _jacobian = std::make_unique<Eigen::Matrix3Xd>(3, _plant.num_positions());
-    // Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
-
-
-
-  // MultibodyPlant<double> _plant(0.0);
-  // Parser parser(&_plant);
-  // parser.AddModelsFromString(urdf, ".urdf");
-  // const auto& basebody = _plant.GetBodyByName("base_link");
-  // _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
-  // _plant.Finalize();
-  // auto _plantContextPointer = _plant.CreateDefaultContext();
-  // Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
-  // Eigen::Vector3d p_BoBp_B;
-  // p_BoBp_B << 0.0,0.0,0.0;
-  // const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
-  // const Frame<double>& _worldFrame = _plant.world_frame();
-  // _plant.CalcJacobianTranslationalVelocity(
-  //     *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
-
-
-
-
-
-
-
-
-
-    // calculator_.load_model(urdf);    
-    // RCLCPP_INFO(get_node()->get_logger(), urdf.c_str());
-    // RCLCPP_INFO(get_node()->get_logger(), "SEPERATE");
-    // RCLCPP_INFO(get_node()->get_logger(), std::to_string(calculator_.getp()).c_str());
+    calculator_.load_model(urdf);    
   }
   catch (const std::exception & e)
   {
@@ -190,19 +145,6 @@ controller_interface::return_type IKController::update(
 {
   auto joint_commands = rt_command_ptr_.readFromRT();
 
-  // const double shoulder_joint_position = state_interfaces_[0].get_value();
-  // const double elbow_joint_position = state_interfaces_[1].get_value();
-
-  // Eigen::Vector2d currentpos;
-  // currentpos << shoulder_joint_position, elbow_joint_position;
-
-  // Eigen::Vector2d goalpos;
-  // goalpos << (*joint_commands)->data[0], (*joint_commands)->data[1];
-
-  // // Eigen::VectorXd currentpos(shoulder_joint_position, elbow_joint_position);
-  // // Eigen::VectorXd goalpos((*joint_commands)->data[0], (*joint_commands)->data[1]);
-  // Eigen::VectorXd targetPositions = calculator_.calculateOneStep(goalpos, currentpos);
-
   // no command received yet
   if (!joint_commands || !(*joint_commands))
   {
@@ -218,43 +160,16 @@ controller_interface::return_type IKController::update(
     return controller_interface::return_type::ERROR;
   }
 
-  // Eigen::Vector2d goalposition;
-  // goalposition << (*joint_commands)->data[0], (*joint_commands)->data[1];
-  // Eigen::Vector2d currentpose;
-  // currentpose << state_interfaces_[0].get_value(), state_interfaces_[1].get_value();
-  // Eigen::VectorXd commandedjointpositions = calculator_.calculateOneStep(); // goalposition, currentpose
-
-
-
-
-
-
-  // Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
-  Eigen::Vector3d p_BoBp_B;
-  p_BoBp_B << 0.0,0.0,0.0;
-  const Frame<double>& _endFrame = _plant.GetBodyByName("end_effector").body_frame();
-  const Frame<double>& _worldFrame = _plant.world_frame();
-  _plant.CalcJacobianTranslationalVelocity(
-      *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, _jacobian.get());
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Eigen::Vector3d goalposition;
+  goalposition << (*joint_commands)->data[0], (*joint_commands)->data[1], 0.0;
+  Eigen::Vector2d currentpose;
+  currentpose << state_interfaces_[0].get_value(), state_interfaces_[1].get_value();
+  Eigen::VectorXd commandedjointpositions = calculator_.calculateOneStep(goalposition, currentpose);
 
   for (auto index = 0ul; index < command_interfaces_.size(); ++index)
   {
-    command_interfaces_[index].set_value((*joint_commands)->data[index]);
-    // command_interfaces_[index].set_value(commandedjointpositions(index));
+    // command_interfaces_[index].set_value((*joint_commands)->data[index]);
+    command_interfaces_[index].set_value(commandedjointpositions(index));
   }
 
   return controller_interface::return_type::OK;

@@ -26,7 +26,7 @@ class DifferentialInverseKinematicsCalculator {
         void load_model(std::string urdf);
 
         // Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose
-        Eigen::VectorXd calculateOneStep(); // returns vector of goal joint velocities (or integrated into positions?).
+        Eigen::VectorXd calculateOneStep(Eigen::VectorXd goalPosition, Eigen::VectorXd currentPose); // returns vector of goal joint velocities (or integrated into positions?).
 
         Eigen::MatrixXd calculate2DPseudoInverseJacobian(); // based on current robot pose
 
@@ -39,7 +39,6 @@ class DifferentialInverseKinematicsCalculator {
 
         MultibodyPlant<double> _plant;
         std::unique_ptr<Context<double>> _plantContextPointer; // initialization can be delayed since it is a pointer, but I might as well do it in the initializer list
-
 };
 
 }
