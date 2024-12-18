@@ -15,6 +15,8 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # set(drake_DIR /home/louis/drake/bazel-drake/tools/install/libdrake)
 # list(APPEND CMAKE_PREFIX_PATH /home/louis/drake/bazel-bin/tools/install/libdrake)
 
+set(drake_DIR /home/louis/Documents/drake-build/install/lib/cmake/drake/)
+
 # find dependencies
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   hardware_interface
@@ -39,6 +41,7 @@ find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(drake REQUIRED)
 # find_package(drake CONFIG REQUIRED PATHS /opt/drake)
+find_package(drake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
