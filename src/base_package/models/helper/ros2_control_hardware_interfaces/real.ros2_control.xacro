@@ -14,6 +14,16 @@
             <param name="node_id">0</param>
         </joint>
 
+        <!-- <transmission name="transmission1"> -->
+            <!-- <plugin>transmission_interface/SimpleTransmission</plugin> -->
+            <!-- <actuator name="shoulder_actuator" role="shoulder_actuator"/> -->
+            <!-- <joint name="shoulder" role="shoulder"> -->
+                <!-- 31/30*w_s = 122/30*w_c ${31/122}-->
+                <!-- <mechanical_reduction>325</mechanical_reduction>
+                <offset>0.0</offset>
+            </joint>
+        </transmission> -->
+
     </ros2_control>
 
     <ros2_control name="elbow_interface" type="system">
@@ -32,7 +42,16 @@
             </command_interface>
             <state_interface name="position"/>
         </joint>
-        
+
+        <!-- <transmission name="transmission1"> -->
+            <!-- <plugin>transmission_interface/SimpleTransmission</plugin> -->
+            <!-- <actuator name="elbow_actuator" role="elbow_actuator"/> -->
+            <!-- <joint name="elbow" role="elbow">
+                <mechanical_reduction>4.0</mechanical_reduction>
+                <offset>0.0</offset>
+            </joint>
+        </transmission>
+         -->
     </ros2_control>
     
 </robot>

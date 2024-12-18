@@ -62,7 +62,7 @@ void CanBusComms::readMotorPosition(double &position) {
 
     float convertedPosition;
     memcpy(&convertedPosition, frame.data, sizeof(float));
-    position = convertedPosition;
+    position = convertedPosition / 4.;
 }
 
 void CanBusComms::shutdown() {

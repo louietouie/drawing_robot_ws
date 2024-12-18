@@ -39,7 +39,7 @@ namespace base_package {
         Eigen::VectorXd currentEndEffectorPosition = calculateCartesianCoordinates("end_effector");
         Eigen::VectorXd desiredEndEffectorVelocities = goalPosition - currentEndEffectorPosition;
         Eigen::VectorXd targetJointVelocities = p_inv * desiredEndEffectorVelocities;
-        Eigen::VectorXd targetJointPositions = currentPose + (targetJointVelocities * 0.005); // dt?
+        Eigen::VectorXd targetJointPositions = currentPose + (targetJointVelocities * 0.05); // dt?
 
         return targetJointPositions;
 

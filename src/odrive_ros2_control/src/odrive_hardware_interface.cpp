@@ -285,7 +285,7 @@ return_type ODriveHardwareInterface::write(const rclcpp::Time&, const rclcpp::Du
         // Send the CAN message that fits the set of enabled setpoints
         if (axis.pos_input_enabled_) {
             Set_Input_Pos_msg_t msg;
-            msg.Input_Pos = axis.pos_setpoint_ / (2 * M_PI);
+            msg.Input_Pos = axis.pos_setpoint_ / (2 * M_PI) * (122./31); // LOUIS ADDED GEAR RATIO HERE
             msg.Vel_FF = axis.vel_input_enabled_ ? (axis.vel_setpoint_  / (2 * M_PI)) : 0.0f;
             msg.Torque_FF = axis.torque_input_enabled_ ? axis.torque_setpoint_ : 0.0f;
             axis.send(msg);
@@ -329,7 +329,7 @@ void Axis::on_can_msg(const rclcpp::Time&, const can_frame& frame) {
     switch (cmd) {
         case Get_Encoder_Estimates_msg_t::cmd_id: {
             if (Get_Encoder_Estimates_msg_t msg; try_decode(msg)) {
-                pos_estimate_ = msg.Pos_Estimate * (2 * M_PI);
+                pos_estimate_ = msg.Pos_Estimate * (2 * M_PI) * (31./122); // * (31/122);
                 vel_estimate_ = msg.Vel_Estimate * (2 * M_PI);
             }
         } break;

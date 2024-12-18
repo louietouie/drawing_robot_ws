@@ -200,7 +200,7 @@ hardware_interface::return_type RRBotSystemPositionOnlyHardware::write(
     return hardware_interface::return_type::ERROR;
   }
   printf("%lf", hw_joint_command_);
-  can_connection_.sendMotorCommand(hw_joint_command_);
+  can_connection_.sendMotorCommand(hw_joint_command_ * 4.);
   return hardware_interface::return_type::OK;
 }
 

@@ -57,7 +57,8 @@
     <joint name="elbow" type="revolute">
         <parent link="upperarm"/>
         <child link="forearm"/>
-        <origin xyz="0 ${upperarm_length} ${upperarm_height}"/>
+        <!-- start at pi/2 so not at a singularity -->
+        <origin xyz="0 ${upperarm_length} ${upperarm_height}" rpy="0 0 ${pi/2}"/>
         <axis xyz="0 0 1" />
         <limit upper="${pi/2}" lower="-${pi/2}" effort=".1" velocity=".5"/>
         <!-- <limit drake:acceleration="8.57" effort="320" lower="-2.96705972839" upper="2.96705972839" velocity="1.4835298641951802"/>
@@ -91,6 +92,13 @@
         </xacro:square_prism_identical_collision>
         <xacro:square_prism_inertial mass="${end_effector_mass}" length="${end_effector_length}" height="${end_effector_height}"/>
     </link>
+
+    <!-- Drake 'MultibodyPlant does not currently support non-default mechanical reductions.' -->
+    <!-- <transmission name="transm" type="SimpleTransmission">
+        <joint name="shoulder"/>
+        <actuator name="shoulder_motor"/>
+        <mechanicalReduction>.1</mechanicalReduction>
+    </transmission> -->
 
 
 </robot>

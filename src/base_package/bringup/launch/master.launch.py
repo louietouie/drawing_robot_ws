@@ -21,7 +21,7 @@ def generate_launch_description():
     # ________________ Initialized Arguments ________________
 
     # ________________ Robot State Publisher ________________
-    args_robot_state_publisher = {'mock_mode': 'true', 'sim_mode': 'false'}
+    args_robot_state_publisher = {'mock_mode': 'false', 'sim_mode': 'false'}
     node_robot_state_publisher = get_launch_file('rsp.launch.py', args_robot_state_publisher)
 
     # ________________ ros2_control Controller Manager ________________

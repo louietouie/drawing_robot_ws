@@ -34,6 +34,26 @@
             <!-- <state_interface name="velocity"/> -->
         </joint>
 
+        <!-- <transmission name="transmission1">
+            <plugin>transmission_interface/SimpleTransmission</plugin>
+            <actuator name="shoulder_actuator" role="shoulder_actuator"/> 
+            <joint name="shoulder" role="shoulder">
+                31/30*w_s = 122/30*w_c
+                <mechanical_reduction>${122/31}</mechanical_reduction>
+                <offset>0.0</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="transmission1">
+            <plugin>transmission_interface/SimpleTransmission</plugin>
+            <actuator name="elbow_actuator" role="elbow_actuator"/>
+            <joint name="elbow" role="elbow">
+                <mechanical_reduction>4.0</mechanical_reduction>
+                <offset>0.0</offset>
+            </joint>
+        </transmission> -->
+
+
     </ros2_control>
     
 </robot>
