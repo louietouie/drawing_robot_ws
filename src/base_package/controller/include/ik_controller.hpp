@@ -35,23 +35,15 @@ namespace base_package
 {
 using CmdType = std_msgs::msg::Float64MultiArray;
 
-using drake::multibody::MultibodyPlant;
-using drake::multibody::Parser;
-// using multibody::RigidBody;
-using drake::multibody::RigidBodyFrame;
-using drake::multibody::Frame;
-// using multibody::Context;
-using drake::systems::Context;
-using drake::math::RigidTransformd;
+// using drake::multibody::MultibodyPlant;
+// using drake::multibody::Parser;
+// // using multibody::RigidBody;
+// using drake::multibody::RigidBodyFrame;
+// using drake::multibody::Frame;
+// // using multibody::Context;
+// using drake::systems::Context;
+// using drake::math::RigidTransformd;
 
-/**
- * \brief Forward command controller for a set of joints and interfaces.
- *
- * This class forwards the command signal down to a set of joints or interfaces.
- *
- * Subscribes to:
- * - \b commands (std_msgs::msg::Float64MultiArray) : The commands to apply.
- */
 class IKController : public controller_interface::ControllerInterface
 {
 public:
@@ -77,22 +69,9 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 protected:
-  /**
-   * Declare parameters in this method.
-   * Error handling does not have to be done. It is done in `on_init`-method of this class.
-   */
+
   void declare_parameters(); 
 
-  /**
-   * Read parameters in this method and set `command_interface_types_`
-   * variable. The variable is then used to propagate the command interface configuration to
-   * controller manager. The method is called from `on_configure`-method of this class.
-   *
-   * It is expected that error handling of exceptions is done.
-   *
-   * \returns controller_interface::CallbackReturn::SUCCESS if parameters are successfully read and
-   * their values are allowed, controller_interface::CallbackReturn::ERROR otherwise.
-   */
   controller_interface::CallbackReturn read_parameters();
 
   std::vector<std::string> joint_names_;

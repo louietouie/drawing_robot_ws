@@ -4,7 +4,7 @@ The purpose of this repo is to control a 3D printed robot arm (with one ODrive a
 
 ## Repo Summary
 
-This repository consists of 3 ROS2 packages and code to run on the hardware to act as a CAN reciever and stepper motor controller. 2 of the ROS packages are almost direct copies from the [ODrive ROS2 Control](https://github.com/odriverobotics/ros_odrive) github repo.
+This repository consists of 3 ROS2 packages and code to run on the hardware to act as a CAN reciever and stepper motor controller. 2 of the ROS packages (odrive_base and odrive_ros2_control) are almost direct copies from the [ODrive ROS2 Control](https://github.com/odriverobotics/ros_odrive) github repo.
 
 ## Setup on RPi 5
 

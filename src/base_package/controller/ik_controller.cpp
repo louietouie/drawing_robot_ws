@@ -55,17 +55,6 @@ controller_interface::CallbackReturn IKController::on_init()
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  //   calculator_.init(urdf);
-  // if (!urdf.empty())
-  // {
-  //   drake::DifferentialInverseKinematicsCalculator calculator_;
-  //   calculator_.init(urdf);
-  // }
-  // else
-  // {
-  //   // empty URDF is used for some tests
-  //   RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
-  // }
   RCLCPP_INFO(get_node()->get_logger(), "Initialization Succeeded");
   return controller_interface::CallbackReturn::SUCCESS;
 
@@ -160,6 +149,7 @@ controller_interface::return_type IKController::update(
     return controller_interface::return_type::ERROR;
   }
 
+  // TODO: array loop so not hardcoded to two joints.
   Eigen::Vector3d goalposition;
   goalposition << (*joint_commands)->data[0], (*joint_commands)->data[1], 0.0;
   Eigen::Vector2d currentpose;

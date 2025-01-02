@@ -12,35 +12,30 @@
 
 void CanBusComms::setup() {
 
-    // Create a socket
     s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (s < 0) {
         perror("Socket creation failed");
         return;
     }
 
-    // Specify the CAN interface
     strcpy(ifr.ifr_name, "can0");
     ioctl(s, SIOCGIFINDEX, &ifr);
-    
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
 
-    // Bind the socket to the CAN interface
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror("Bind failed");
         return;
     }
 
-    // Create a CAN frame to send
+    // Test message.
     frame.can_id = 0x123;
-    frame.can_dlc = 4; // Data length
+    frame.can_dlc = 4;
     frame.data[0] = 0x11;
     frame.data[1] = 0x06;
     frame.data[2] = 0x35;
     frame.data[3] = 0x09;
 
-    // Send the CAN frame
     sendRaw();
 
 }
@@ -75,19 +70,16 @@ void CanBusComms::sendRaw() {
         perror("Write failed");
         return;
     }
-    // printf("Message sent\n");
 }
 
 void CanBusComms::readRaw() {
 
-    // add filter
     struct can_filter rfilter[1];
     rfilter[0].can_id = 0x660;
     rfilter[0].can_mask = CAN_SFF_MASK;
     setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, &rfilter, sizeof(rfilter));
 
-    // read message into frame
-    nbytes = read(s, &frame, sizeof(struct can_frame));
+    nbytes = read(s, &frame, sizeof(struct can_frame)); // read message into frame
 
     if (nbytes < 0) {
         perror("Read");

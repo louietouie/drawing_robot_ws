@@ -10,25 +10,20 @@ namespace base_package {
     void DifferentialInverseKinematicsCalculator::load_model(std::string urdf) {
 
         Parser parser(&_plant);
+        /* TODO: add error checking. AKA "if (!urdf.empty())..."
+         * RCLCPP_DEBUG(get_node()->get_logger(), "No URDF file given");
+         */
         parser.AddModelsFromString(urdf, ".urdf");
 
-        // without this new joint, _plant.num_positions is 9. With it, just 2.
-        // sledgehammer_base_link_qw, sledgehammer_base_link_qx, sledgehammer_base_link_qy, sledgehammer_base_link_qz, sledgehammer_base_link_x, sledgehammer_base_link_y, sledgehammer_base_link_z, sledgehammer_shoulder_q, sledgehammer_elbow_q
-        // valid names in model instance 'sledgehammer' are: base_link, end_effector, forearm, odrive_base, upperarm
+        /* NOTE: without this new joint, _plant.num_positions is 9. With it, just 2.
+         * sledgehammer_base_link_qw, sledgehammer_base_link_qx, sledgehammer_base_link_qy, sledgehammer_base_link_qz, sledgehammer_base_link_x, sledgehammer_base_link_y, sledgehammer_base_link_z, sledgehammer_shoulder_q, sledgehammer_elbow_q
+         * valid names in model instance 'sledgehammer' are: base_link, end_effector, forearm, odrive_base, upperarm
+         */
         const auto& basebody = _plant.GetBodyByName("base_link");
         _plant.WeldFrames(_plant.world_frame(), basebody.body_frame(), RigidTransformd());
         _plant.Finalize();
 
         _plantContextPointer = _plant.CreateDefaultContext(); // this must come after plant Finalize
-
-        // I should add some form of error checking 
-        // const std::string & urdf = get_robot_description();
-        // if (!urdf.empty()) {
-        //     parser.AddModelFromString(urdf);
-        // }
-
-        // Might not be neccessary, is _plant itself already the robot?
-        // auto _modelRobot = _plant.GetModelInstanceByName("the_robot_name");
 
     }
 
@@ -43,17 +38,17 @@ namespace base_package {
 
         return targetJointPositions;
 
-        // Notes
-        // VectorX vs Eigen::VectorXd?
-        // VectorX - (Eigen::Matrix<Scalar, Eigen::Dynamic, 1>) https://drake.mit.edu/doxygen_cxx/namespacedrake.html#a77dd228fb4dd66a2c17dd3f7f38ffd85
-        // Eigen::VectorXd - https://eigen.tuxfamily.org/dox/group__matrixtypedefs.html#ga8554c6170729f01c7572574837ecf618
-        // Eigen library how to do operations - http://www.eigen.tuxfamily.org/dox/group__TutorialMatrixArithmetic.html
+        /* NOTE: Difference between VectorX vs Eigen::VectorXd
+         * VectorX - (Eigen::Matrix<Scalar, Eigen::Dynamic, 1>) https://drake.mit.edu/doxygen_cxx/namespacedrake.html#a77dd228fb4dd66a2c17dd3f7f38ffd85
+         * Eigen::VectorXd - https://eigen.tuxfamily.org/dox/group__matrixtypedefs.html#ga8554c6170729f01c7572574837ecf618
+         * Eigen library how to do operations - http://www.eigen.tuxfamily.org/dox/group__TutorialMatrixArithmetic.html
+         */
 
     }
 
     Eigen::MatrixXd DifferentialInverseKinematicsCalculator::calculate2DPseudoInverseJacobian() {
 
-        // https://github.com/RobotLocomotion/drake/blob/0944b39967937ac56f497b0a85a88b7f22e5a6ce/examples/planar_gripper/gripper_brick_planning_constraint_helper.cc#L119
+        // EXAMPLE: https://github.com/RobotLocomotion/drake/blob/0944b39967937ac56f497b0a85a88b7f22e5a6ce/examples/planar_gripper/gripper_brick_planning_constraint_helper.cc#L119
 
         Eigen::Matrix3Xd jacobian(3, _plant.num_positions()); // if spatial velocity, includes rotation, so 6, not 3.
 
@@ -65,7 +60,6 @@ namespace base_package {
 
         _plant.CalcJacobianTranslationalVelocity(
             *_plantContextPointer, drake::multibody::JacobianWrtVariable::kV, _endFrame, p_BoBp_B, _worldFrame, _worldFrame, &jacobian);
-
 
         // const Eigen::SparseMatrix<double> p_inv = _plant.MakeActuationMatrixPseudoinverse();
         Eigen::MatrixXd pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse(); // Eigen Library Alternative
