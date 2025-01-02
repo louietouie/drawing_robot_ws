@@ -35,15 +35,6 @@ namespace base_package
 {
 using CmdType = std_msgs::msg::Float64MultiArray;
 
-// using drake::multibody::MultibodyPlant;
-// using drake::multibody::Parser;
-// // using multibody::RigidBody;
-// using drake::multibody::RigidBodyFrame;
-// using drake::multibody::Frame;
-// // using multibody::Context;
-// using drake::systems::Context;
-// using drake::math::RigidTransformd;
-
 class IKController : public controller_interface::ControllerInterface
 {
 public:
